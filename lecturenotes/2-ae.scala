@@ -124,8 +124,8 @@ def foldExp[T](v: Visitor[T], e: Exp) : T = {
   e match {
     case Num(n) => v.num(n)
     case Id(x) => v.id(x)
-    case Add(l,r) => v.add(foldExp(v,l),foldExp(v,r))
-    case Mul(l,r) => v.mul(foldExp(v,l),foldExp(v,r))
+    case Add(l,r) => v.add(foldExp(v,l), foldExp(v,r))
+    case Mul(l,r) => v.mul(foldExp(v,l), foldExp(v,r))
   }
 }
 /* Here is our evaluator from above rephrased using the visitor infrastructure. */
@@ -143,9 +143,9 @@ assert( eval2(test,testEnv) == 14)
 /* We can of course also apply other algorithms using visitors, such as 
  * counting the number of "Num" literals, or printing to a string: */
 val countVisitor = Visitor[Int]( _=>1, _+_, _+_, _=>0) 
-val printVisitor = Visitor[String](_.n.toString, "("+_+"+"+_+")",_+"*"+_,_.x.toString)
+val printVisitor = Visitor[String](_.n.toString, "("+_+"+"+_+")", _+"*"+_, _.x.toString)
 
-def countNums(e: Exp) = foldExp(countVisitor,e) 
+def countNums(e: Exp) = foldExp(countVisitor, e) 
 
 assert(countNums(test) == 1)
 
@@ -158,10 +158,10 @@ assert(countNums(test) == 1)
  * we represent an expression by a function that will call the "right" functions of a visitor.
  * 
  * For instance, we want to represent the expression "test" by the function: */ 
- def foldForTest[T](v: Visitor[T]) : T = foldExp(v,test)  
-/* except that we want to skip the construction (in the definition of test) and subsequent 
+ def foldForTest[T](v: Visitor[T]) : T = foldExp(v, test)
+/* except that we want to skip the construction (in the definition of test) and subsequent
  * deconstruction(in the pattern match of foldExp) of the data type and represent the expression
- *  directly by the corresponding sequence of calls to the visitor.
+ * directly by the corresponding sequence of calls to the visitor.
  *
  * Recommended exercise: "Partially evaluate" foldForTest, that is, inline the definition of 
  * foldExp and specialize it to the case e = test.
@@ -187,17 +187,17 @@ implicit def num(n: Int) : ExpC = new ExpC {  // we use implicits for num and id
 implicit def id(x: Symbol) : ExpC = new ExpC {
      def apply[T](v: Visitor[T]) = v.id(x) }
 def add(l: ExpC, r:ExpC) : ExpC = new ExpC {
-     def apply[T](v: Visitor[T]) = v.add(l(v),r(v)) } // note the indirect recursion here!
+     def apply[T](v: Visitor[T]) = v.add(l(v), r(v)) } // note the indirect recursion here!
 def mul(l: ExpC, r:ExpC) : ExpC = new ExpC {
-     def apply[T](v: Visitor[T]) = v.mul(l(v),r(v)) } // note the indirect recursion here!
+     def apply[T](v: Visitor[T]) = v.mul(l(v), r(v)) } // note the indirect recursion here!
 
 
 /* We can again reconstruct the original eval interface. Note that the Visitor is 
-  *_applied_ to the expression. */
+ * _applied_ to the expression. */
 def eval3(e: ExpC, env: Env) : Int = e(evalVisitor)(env)
      
 // example test from above rewritten into Church encoding
-val test2 : ExpC = add(mul('x,2),add('y,'y))
+val test2 : ExpC = add(mul('x,2), add('y,'y))
   
 assert(eval3(test2, testEnv) == 14)
 
