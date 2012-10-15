@@ -22,7 +22,7 @@ case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
 case class Id(x: Symbol) extends Exp 
-// Symbols are similar to strings, but they are implicitly "canonicalized" and
+// Symbols are similar to strings, but they are implicitly "canonicalized" (meaning all instances point to a unique copy, in other words, they are not cloned but shared) and
 // can hence be compared efficiently. Unlike strings, they can not be manipulated.
 // They can be constructed by prefixing an identifier with a '
 
