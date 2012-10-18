@@ -163,6 +163,10 @@ assert(countNums(test) == 1)
  * deconstruction(in the pattern match of foldExp) of the data type and represent the expression
  *  directly by the corresponding sequence of calls to the visitor.
  *
+ * One advantage of this "data-less" representation is that, due to short-circuiting the
+ * construction and subsequent deconstruction of the abstract syntax tree, the interpreter
+ * is more efficient. For instance, no pattern matching is needed anymore.
+ *
  * Recommended exercise: "Partially evaluate" foldForTest, that is, inline the definition of 
  * foldExp and specialize it to the case e = test.
  *
