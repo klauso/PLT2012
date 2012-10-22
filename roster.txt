@@ -1,2 +1,2 @@
-Github      Name            Tutorial language preference
-plmday      DAI, Yi         English
+Github      Name            		Tutorial language preference
+b-studios   Brachthäuser, Jonathan	Englisch
