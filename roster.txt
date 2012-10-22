@@ -4,3 +4,4 @@ ckafi       Frilling,Tobias English
 b-studios   Brachthäuser, Jonathan	Englisch
 eifx        Eifler, Alexander  Deutsch
 tewe        Weber, Tobias   English
+janbrohl    Brohl, Jan      English or German (don't care)
