@@ -313,3 +313,14 @@ def eval_by_name(e: Exp) : Int = e match {
     eval_by_name(subst(body, x, xdef))
 }
 
+// b) Test cases. Feel free to add more.
+
+val err_exp1 = With('x, 'y, With('y, 1, 'x))
+
+def test_v1 = eval_by_value(err_exp1)
+def test_n1 = eval_by_name(err_exp1)
+
+// Both tests should produce the error "Free variable: y"
+// test_v1
+// test_n1
+  
