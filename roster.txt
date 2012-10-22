@@ -1,3 +1,4 @@
 Github      Name            Tutorial language preference
 plmday      DAI, Yi         English
 ckafi       Frilling,Tobias English
+b-studios   Brachthäuser, Jonathan	Englisch
