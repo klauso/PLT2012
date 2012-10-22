@@ -1,3 +1,2 @@
 Github      Name            Tutorial language preference
 plmday      DAI, Yi         English
-yfcai       CAI, Yufei      German
