@@ -6,5 +6,6 @@ ckafi       Frilling,Tobias         English
 leonidglanz Glanz, Leonid           English
 koerberm    Körber, Michael         English
 mreif       Reif, Michael           English
+sun.cz      Sun, Chengzhi           Deutsch
 tewe        Weber, Tobias           English
 zdorovyk    Zdorovyk, Mykola        English or German
