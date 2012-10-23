@@ -5,6 +5,7 @@ eifx        Eifler, Alexander       Deutsch
 ckafi       Frilling,Tobias         English
 leonidglanz Glanz, Leonid           English
 koerberm    Körber, Michael         English
+puschj      Pusch, Jonas            English
 mreif       Reif, Michael           English
 sun.cz      Sun, Chengzhi           Deutsch
 tewe        Weber, Tobias           English
