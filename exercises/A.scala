@@ -44,6 +44,15 @@ implicit def num2exp(n: Int) = Num(n)
 implicit def sym2exp(x: Symbol) = Id(x)
 type Env = Map[Symbol,Int]
 case class Visitor[T](num:Int=>T, add:(T,T)=>T, mul:(T,T)=>T, id:Symbol=>T)
+def foldExp[T](v: Visitor[T], e: Exp) : T = {
+  e match {
+    case Num(n) => v.num(n)
+    case Id(x) => v.id(x)
+    case Add(l,r) => v.add(foldExp(v,l), foldExp(v,r))
+    case Mul(l,r) => v.mul(foldExp(v,l), foldExp(v,r))
+    case With(x, xdef, body) => sys.error("AE expected, WAE encountered!")
+  }
+}
 
 
 /*
