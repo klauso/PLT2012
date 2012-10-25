@@ -2,7 +2,7 @@
 
 Programming languages and types
 
-Exercise session 22.10.2012
+Exercise session A on 22.10.2012
 
 Hand in
    - before Monday, 29.10.12, 0800 hrs
