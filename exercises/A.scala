@@ -5,9 +5,11 @@ Programming languages and types
 Exercise session A on 22.10.2012
 
 Hand in
-   - before Monday, 29.10.12, 0800 hrs
+   - anytime
    - as a single .scala file
    - by E-Mail to pllecture@informatik
+
+Solution will be posted before 29.10.12, 1000 hrs.
 
 While everyone should write their own solution, it is recommended to
 work face-to-face in small groups. As with lecture notes, this file
