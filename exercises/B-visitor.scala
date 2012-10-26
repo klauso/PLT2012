@@ -44,13 +44,17 @@ def fold[T](v : Visitor[T])(e : Exp) : T = e match {
 val eval_visitor = new Visitor[Int](
   identity,
   _ + _,
-  _ * _
+  _ * _,
+  _ => sys.error("Unknown term"),
+  (_,_,_) => sys.error("Unknown term")
 )
 
 val print_visitor = new Visitor[String](
   _.toString,
   "( " + _ + " + " + _ + " )",
-  "( " + _ + " * " + _ + " )"
+  "( " + _ + " * " + _ + " )",
+  _ => sys.error("Unknown term"),
+  (_,_,_) => sys.error("Unknown term")
 )
 
 def eval  : Exp => Int    = fold(eval_visitor)
