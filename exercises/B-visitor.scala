@@ -22,6 +22,9 @@ case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
 
+case class Id(x : Symbol) extends Exp
+case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp
+
 case class Visitor[T](
   num : Int => T,
   add : (T, T) => T,
@@ -60,6 +63,3 @@ eval(e)
 print(e)
 
 */
-
-case class Id(x : Symbol) extends Exp
-case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp
