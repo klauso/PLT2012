@@ -67,3 +67,33 @@ eval(e)
 print(e)
 
 */
+
+val bound_variables_visitor = new Visitor[Set[Symbol]] (
+  _ => Set(),
+  _ ++ _,
+  _ ++ _,
+  _ => Set(),
+  (x, bv_in_xdef, bv_in_body) => (bv_in_xdef ++ bv_in_body) + x
+)
+
+val free_variables_visitor = new Visitor[Set[Symbol]] (
+  _ => Set(),
+  _ ++ _,
+  _ ++ _,
+  Set(_),
+  (x, fv_in_xdef, fv_in_body) => fv_in_xdef ++ (fv_in_body - x)
+)
+
+def bound_variables : Exp => Set[Symbol] = fold(bound_variables_visitor)
+def free_variables  : Exp => Set[Symbol] = fold(free_variables_visitor)
+
+def all_variables(e : Exp) = bound_variables(e) ++ free_variables(e)
+
+/* WAE tests
+
+val e = With('x, With('y, Id('x), Id('y)), Id('z))
+bound_variables(e)
+free_variables(e)
+all_variables(e)
+
+*/

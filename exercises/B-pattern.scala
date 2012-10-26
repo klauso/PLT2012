@@ -45,3 +45,30 @@ print(e)
 
 case class Id(x : Symbol) extends Exp
 case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp
+
+def bound_variables(e : Exp) : Set[Symbol] = e match {
+  case Num(n)        => Set()
+  case Add(lhs, rhs) => bound_variables(lhs) ++ bound_variables(rhs)
+  case Mul(lhs, rhs) => bound_variables(lhs) ++ bound_variables(rhs)
+  case Id(x)         => Set()
+  case With(x, d, b) => (bound_variables(d) ++ bound_variables(b)) + x
+}
+
+def free_variables(e : Exp) : Set[Symbol] = e match {
+  case Num(n)        => Set()
+  case Add(lhs, rhs) => free_variables(lhs) ++ free_variables(rhs)
+  case Mul(lhs, rhs) => free_variables(lhs) ++ free_variables(rhs)
+  case Id(x)         => Set(x)
+  case With(x, d, b) => free_variables(d) ++ (free_variables(b) - x)
+}
+
+def  all_variables(e : Exp) = free_variables(e) ++ bound_variables(e)
+
+/* WAE tests
+
+val e = With('x, With('y, Id('x), Id('y)), Id('z))
+bound_variables(e)
+free_variables(e)
+all_variables(e)
+
+*/
