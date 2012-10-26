@@ -42,3 +42,6 @@ eval(e)
 print(e)
 
 */
+
+case class Id(x : Symbol) extends Exp
+case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp

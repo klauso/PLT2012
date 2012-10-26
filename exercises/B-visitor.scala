@@ -25,13 +25,17 @@ case class Mul(lhs: Exp, rhs: Exp) extends Exp
 case class Visitor[T](
   num : Int => T,
   add : (T, T) => T,
-  mul : (T, T) => T
+  mul : (T, T) => T,
+  id  : Symbol => T,
+  wth : (Symbol, T, T) => T
 )
 
 def fold[T](v : Visitor[T])(e : Exp) : T = e match {
   case Num(n)        => v.num(n)
   case Add(lhs, rhs) => v.add(fold(v)(lhs), fold(v)(rhs))
   case Mul(lhs, rhs) => v.mul(fold(v)(lhs), fold(v)(rhs))
+  case Id(x)         => v.id(x)
+  case With(x, d, b) => v.wth(x, fold(v)(d), fold(v)(b))
 }
 
 val eval_visitor = new Visitor[Int](
@@ -56,3 +60,6 @@ eval(e)
 print(e)
 
 */
+
+case class Id(x : Symbol) extends Exp
+case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp
