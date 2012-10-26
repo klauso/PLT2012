@@ -97,3 +97,8 @@ free_variables(e)
 all_variables(e)
 
 */
+
+// Trick question to those who attended "compiler construction":
+//
+// Is it possible to extend eval_visitor to work on WAE terms?
+// Why, or why not?
