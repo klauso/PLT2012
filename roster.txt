@@ -5,6 +5,7 @@ eifx        Eifler, Alexander       Deutsch
 ckafi       Frilling,Tobias         English
 leonidglanz Glanz, Leonid           English
 koerberm    Körber, Michael         English
+smonh       Martin, Simon           English
 puschj      Pusch, Jonas            English
 mreif       Reif, Michael           English
 Christian88 Stickl, Christian       German
@@ -12,4 +13,3 @@ sun.cz      Sun, Chengzhi           Deutsch
 IrresLicht  Tammena, Jan            English or German
 tewe        Weber, Tobias           English
 zdorovyk    Zdorovyk, Mykola        English or German
-smonh       Martin, Simon           English
