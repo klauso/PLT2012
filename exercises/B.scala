@@ -174,7 +174,7 @@ List(2, 3, 4, 5, 6, 7, 3, 5, 7, 9, 11, 13, 5, 13, 29, 61, 125, 253))
 //
 //    Do remember to call env.clone() judiciously to prevent the local
 //    bindings inside function bodies from affecting the outside
-//    universie.
+//    universe.
 //
 // b. Complete the code below.
 //    We proceed in "continuation passing style",
@@ -204,8 +204,8 @@ def eval_dynamic_scope(
   // we evaluate the left-hand-side first,
   // giving it as continuation a function that will
   // evaluate the right-hand-side under the environment
-  // after evaluation of the right hand side, and do the
-  // rest of the computation after that.
+  // after evaluation of the left-hand-side, and do the
+  // rest of the computation  thereafter.
   case Add(lhs, rhs)
     => eval_dynamic_scope(
          lhs, funs, env,
@@ -230,13 +230,13 @@ def eval_dynamic_scope(
 
 val e1 = Mul(Add(3, 4), Mul(2, 3))
 val e2 = Mul(With('z, 6, 7), 'z)
-val e4 = Add(With('hidden_factor, 7, 0), Call('multiply, List(6)))
-val e5 = Call('multiply, List(With('hidden_factor, 7, 6)))
+val e3 = Add(With('hidden_factor, 7, 0), Call('multiply, List(6)))
+val e4 = Call('multiply, List(With('hidden_factor, 7, 6)))
 
 val multiply = 'multiply -> FunDef('n :: Nil, Mul('n, 'hidden_factor))
 val dynamic_funs : Funs = Map(multiply)
 
 // assert(42 == eval_dynamic_scope(e1))
 // assert(42 == eval_dynamic_scope(e2))
+// assert(42 == eval_dynamic_scope(e3, dynamic_funs))
 // assert(42 == eval_dynamic_scope(e4, dynamic_funs))
-// assert(42 == eval_dynamic_scope(e5, dynamic_funs))
