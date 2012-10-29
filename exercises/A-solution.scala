@@ -2,19 +2,12 @@
 
 Programming languages and types
 
-Exercise session A on 22.10.2012
+Solution to exercise session A on 22.10.2012
 
-Hand in
-   - anytime
-   - as a single .scala file
-   - by E-Mail to pllecture@informatik
+Should be uploaded before 29.10.12, 1000 hrs.
 
-Solution will be posted before 29.10.12, 1000 hrs.
-
-While everyone should write their own solution, it is recommended to
-work face-to-face in small groups. As with lecture notes, this file
-can be checked and experimented with by running the scala interpreter
-and typing
+As with lecture notes, this file can be checked and experimented with
+by running the scala interpreter and typing
 
 scala> :l A.scala
 
@@ -134,14 +127,20 @@ list123 match {
 // a) Please write a function to calculate the sum of a list of
 //    integers by pattern matching.
 
-   // def sum(list : List[Int]) : Int = list match { ... }
+def sum(list : List[Int]) : Int = list match {
+  case Nil     => 0
+  case x :: xs => x + sum(xs)
+}
 
 // b) Write a pretty-printer for lists of integers by pattern
 //    matching:
 //
 //    print( List(1, 2, 3) ) = "1 :: 2 :: 3 :: Nil"
 
-   // def print(list : List[Int]) : String = list match { ... }
+def print(list : List[Int]) : String = list match {
+  case Nil     => "Nil"
+  case x :: xs => x + " :: " + print(xs)
+}
 
 /*
 4. Visitors
@@ -159,11 +158,11 @@ def foldList[T, R](list : List[T], visitor : ListVisitor[T, R]) : R =
 
 // a) Reimplement `sum` and `print` through visitors.
 
-   // val sumVisitor : ListVisitor[Int, Int] =
-   // def sum =
+val sumVisitor = new ListVisitor[Int, Int](0, _ + _)
+def sum(list : List[Int]) = foldList(list, sumVisitor)
 
-   // val printVisitor : ListVisitor[Int, String] =
-   // def print =
+val printVisitor = new ListVisitor[Int, String]("Nil", _ + " :: " + _)
+def print(list : List[Int]) = foldList(list, printVisitor)
 
 /*
 5. Church encoding
@@ -198,17 +197,19 @@ abstract class ListC[T] { def apply[R](v : ListVisitor[T,R]) : R }
 //
 //      case class ListVisitor[T, R](nil : R, cons : (T, R) => R)
 
-   // def nil[T] : ListC[T] = new ListC[T] {
-   //   def apply[R](v : ListVisitor[T, R]) : R =
-   // }
+def nil[T] : ListC[T] = new ListC[T] {
+  def apply[R](v : ListVisitor[T, R]) : R = v.nil
+}
    
-   // def cons[T](head : T, tail : ListC[T]) =
+def cons[T](head : T, tail : ListC[T]) = new ListC[T]{
+  def apply[R](v : ListVisitor[T, R]) : R = v.cons(head, tail(v))
+}
    
-   // val list1234 = cons(1, cons(2, cons(3, cons(4, nil[Int]))))
+val list1234 = cons(1, cons(2, cons(3, cons(4, nil[Int]))))
    
-   // def sum(listc : ListC[Int]) : Int =
+def sum(listc : ListC[Int]) : Int = listc(sumVisitor)
    
-   // def print(listc : ListC[Int]) : String =
+def print(listc : ListC[Int]) : String = listc(printVisitor)
 
 /*
 6. Variables in AE
@@ -228,21 +229,32 @@ Hint about sets in Scala:
 
 // a) With pattern matching
 
-   // def variables1(e : Exp) : Set[Symbol] =
+def variables1(e : Exp) : Set[Symbol] = e match {
+  case Num(n)        => Set()
+  case Add(lhs, rhs) => variables1(lhs) ++ variables1(rhs)
+  case Mul(lhs, rhs) => variables1(lhs) ++ variables1(rhs)
+  case Id(x)         => Set(x)
+  case With(_,_,_)   => sys.error("AE expected, WAE encountered!")
+}
 
 // b) using a visitor and the `foldExp` function
 
-   // val variablesVisitor = Visitor[Set[Symbol]]( ... )
+val variablesVisitor = Visitor[Set[Symbol]](
+  _ => Set(), // The underscore _ denotes an ignored argument
+  _ ++ _,     // The underscores denote resp. the first and second argument
+  _ ++ _,     // So an underscore has many meanings and is ambiguous alone.
+  x => Set(x)
+)
 
-   // def variables2(e : Exp) : Set[Symbol] = foldExp(variablesVisitor, e)
+def variables2(e : Exp) : Set[Symbol] = foldExp(variablesVisitor, e)
 
 // c) Testcases, uncomment to execute. Feel free to add more!
 
-   // assert(variables1(Add('x, 'y)) == Set('x, 'y))
-   // assert(variables1(Mul(Add(9, 'y), Mul('x, 'y))) == Set('x, 'y))
+assert(variables1(Add('x, 'y)) == Set('x, 'y))
+assert(variables1(Mul(Add(9, 'y), Mul('x, 'y))) == Set('x, 'y))
 
-   // assert(variables2('x) == Set('x))
-   // assert(variables2(Add(Mul('x, 5), Add(4, 'x))) == Set('x))
+assert(variables2('x) == Set('x))
+assert(variables2(Add(Mul('x, 5), Add(4, 'x))) == Set('x))
 
 /*
 7. Free Variables in WAE
@@ -252,12 +264,26 @@ Hint about sets in Scala:
 // a) Implement a scala function that computes the set of all free (!)
 //    variables of a WAE term.
 
-   // def freeVariables(wae : Exp) : Set[Symbol] =
+def freeVariables(wae : Exp) : Set[Symbol] = wae match {
+  case Num(n)        => Set()
+  case Add(lhs, rhs) => freeVariables(lhs) ++ freeVariables(rhs)
+  case Mul(lhs, rhs) => freeVariables(lhs) ++ freeVariables(rhs)
+  case Id(x)         => Set(x)
+  case With(x, xdef, body)
+    => freeVariables(xdef) ++ (freeVariables(body) - x)
+}
 
 // b) Test cases; feel free to define more.
 
-   // assert(freeVariables(Id('x)) == Set('x))
-   // assert(freeVariables(With('x, 5, Add('x, 'y))) == Set('y))
+assert(freeVariables(Id('x)) == Set('x))
+assert(freeVariables(With('x, 5, Add('x, 'y))) == Set('y))
+
+// A new test case.
+// Note that due to the lack of recursion in WAE,
+// the scope of 'x in With('x, xdef, body) does _not_
+// extend to xdef.
+
+assert(freeVariables(With('x, Add('x, 'y), 'x)) == Set('x, 'y))
 
 /*
 8. Name binding
@@ -268,18 +294,23 @@ Hint about sets in Scala:
 //    in the following WAE term is binding, bound or free.
 
 With('x, 5,                   // Binding
-         Add('x,              //
-             With('x, 3,      //
-                      Mul('y, //
-                          'x) //
+         Add('x,              // Bound
+             With('x, 3,      // Binding
+                      Mul('y, // Free
+                          'x) // Bound
 )))
 
 // b) Write a scala snippet where a name is shadowed. Describe the
 //    scopes of the name bindings.
 
 /* Scala snippet to explain the concept of "shadowing"
-   ...
 */
+
+val x = new Object { // Scope of x : anonymous-class extends from line 309 downward.
+  def x              // Scope of x : Int => Int is lines 310 -- 312.
+       (x : Int)     // Scope of x : Int is the line 312.
+       = x + 1       // This x is bound to x : Int on line 311.
+}
 
 
 /*
@@ -303,8 +334,48 @@ With('x, 5,                   // Binding
 //    - You are welcome to implement an idea of your own,
 //      independent from the lecture and the hints here.
 
-def subst(e : Exp, i : Symbol, v : Exp) : Exp =
-  sys.error("TODO: Fix me!")
+val randomNumberGenerator = new scala.util.Random()
+
+// freshVariable:
+// Finds a name such as 'x42 that does not occur in the set of symbols
+// The second parameter `startNumber` denotes the number, say 42,
+// such that the search start at the name 'x42. It has a random
+// default value to speed up the search. Thus, `freshName` is no
+// longer a pure function.
+def freshName(
+  set : Set[Symbol],
+  startNumber : Int = randomNumberGenerator.nextInt.abs
+) : Symbol = {
+  val name = Symbol("x" + startNumber)
+  if (set.contains(name)) freshName(set) else name
+}
+
+def subst(e : Exp, i : Symbol, v : Exp) : Exp = e match {
+    case Num(n)    => e
+    case Id(x)     => if (x == i) v else e
+    case Add(l, r) => Add(subst(l, i, v), subst(r, i, v))
+    case Mul(l, r) => Mul(subst(l, i, v), subst(r, i, v))
+    // Handle shadowing perfectly.
+    // If `x` occurs free in `v`,
+    // then to avoid accidental name capturing,
+    // we must rename all free occurrences of `x` in `body`
+    // to some fresh name that is free in neither `body` nor `v`
+    // before we substitute `i` with `v` in `body`.
+    case With(x, xdef, body)
+      => if (x == i)
+           With(x, subst(xdef, i, v), body)
+         else {
+           val free_in_v = freeVariables(v)
+           if (free_in_v.contains(x)) {
+             val fresh_name = freshName(free_in_v ++ freeVariables(body))
+             With(fresh_name,
+                  subst(xdef, i, v),
+                  subst(subst(body, x, Id(fresh_name)), i, v))
+           }
+           else
+             With(x, subst(xdef, i, v), subst(body, i, v))
+         }
+}
 
 def eval_by_value(e: Exp) : Int = e match {
   case Num(n) => n
@@ -331,7 +402,6 @@ val err_exp1 = With('x, 'y, With('y, 1, 'x))
 def test_v1 = eval_by_value(err_exp1)
 def test_n1 = eval_by_name(err_exp1)
 
-// Both tests should produce the error "Free variable: y"
+// Both tests produces the error "Free variable: y"
 // test_v1
-// test_n1
-  
+// test_n1  

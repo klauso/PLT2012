@@ -1,2 +1,15 @@
-Github      Name            Tutorial language preference
-yfcai       CAI, Yufei      German
+Github      Name                    Tutorial language preference
+b-studios   Brachthäuser, Jonathan  Englisch
+janbrohl    Brohl, Jan              English or German (don't care)
+eifx        Eifler, Alexander       Deutsch
+ckafi       Frilling,Tobias         English
+leonidglanz Glanz, Leonid           English
+koerberm    Körber, Michael         English
+smonh       Martin, Simon           English
+puschj      Pusch, Jonas            English
+mreif       Reif, Michael           English
+Christian88 Stickl, Christian       German
+sun.cz      Sun, Chengzhi           Deutsch
+IrresLicht  Tammena, Jan            English or German
+tewe        Weber, Tobias           English
+zdorovyk    Zdorovyk, Mykola        English or German
