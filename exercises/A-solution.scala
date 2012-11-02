@@ -306,11 +306,11 @@ With('x, 5,                   // Binding
 /* Scala snippet to explain the concept of "shadowing"
 */
 
-val x = new Object { // Scope of x : anonymous-class extends from line 309 downward.
-  def x              // Scope of x : Int => Int is lines 310 -- 312.
-       (x : Int)     // Scope of x : Int is the line 312.
-       = x + 1       // This x is bound to x : Int on line 311.
-}
+// Adapted from Jonathan Brachthäuser's solution
+val example = (x : Int) => (y : Int) => ((x : Int) => x + y)(2 * x)
+//            [    scope of first x                               ]
+//                         [       scope of y                     ]
+//                                       [ scope of 2nd x ]
 
 
 /*
@@ -397,11 +397,34 @@ def eval_by_name(e: Exp) : Int = e match {
 
 // b) Test cases. Feel free to add more.
 
+/* Contributed by Jonathan Brachthäuser
+
+With x = y
+  With y = 1
+    x 
+
+
+With x = 4
+  With x = 5
+    x
+
+With x = 4
+  With y = x + x   // 1
+    With x = 5     
+      y            // 2
+
+*/
 val err_exp1 = With('x, 'y, With('y, 1, 'x))
 
 def test_v1 = eval_by_value(err_exp1)
 def test_n1 = eval_by_name(err_exp1)
 
-// Both tests produces the error "Free variable: y"
+// Both tests should produce the error "Free variable: y"
 // test_v1
-// test_n1  
+// test_n1
+
+val example1 = With('x, 4, With('x, 5, 'x))
+assert(eval_by_value(example1) == eval_by_name(example1))
+  
+val example2 = With('x, 4, With('y, Add('x, 'x), With('x, 5, 'y)))
+assert(eval_by_value(example2) == eval_by_name(example2))
