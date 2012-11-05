@@ -29,8 +29,16 @@ case class Visitor[T](
   num : Int => T,
   add : (T, T) => T,
   mul : (T, T) => T,
-  id  : Symbol => T,
+
+//// It was remarked during exercise session 29.10.2012
+//// that the burden of changing existing visitors can
+//// be lightened by supplying default arguments to the
+//// case class constructor of Visitor.
+
+  id  : Symbol => T
+      = (_ : Symbol) => sys.error("Unknown term: Id"),
   wth : (Symbol, T, T) => T
+      = (_ : Symbol, _ : T, _ : T) => sys.error("Unknown term: With")
 )
 
 def fold[T](v : Visitor[T])(e : Exp) : T = e match {
@@ -44,17 +52,13 @@ def fold[T](v : Visitor[T])(e : Exp) : T = e match {
 val eval_visitor = new Visitor[Int](
   identity,
   _ + _,
-  _ * _,
-  _ => sys.error("Unknown term"),
-  (_,_,_) => sys.error("Unknown term")
+  _ * _
 )
 
 val print_visitor = new Visitor[String](
   _.toString,
   "( " + _ + " + " + _ + " )",
-  "( " + _ + " * " + _ + " )",
-  _ => sys.error("Unknown term"),
-  (_,_,_) => sys.error("Unknown term")
+  "( " + _ + " * " + _ + " )"
 )
 
 def eval  : Exp => Int    = fold(eval_visitor)
