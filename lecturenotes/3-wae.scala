@@ -45,7 +45,7 @@ val test = With('x, 5, Add('x,'x))
 
 /* Note that we deal with *two* languages here:
    
-   (1) This a Scala file with Scala code.
+   (1) This Scala file with Scala code.
    (2) Most of the functions work on programs written in the WAE language.
    
    Most of the time, we concentrate on WAE, but sometimes, we also
@@ -92,7 +92,7 @@ val test = With('x, 5, Add('x,'x))
  * 
  * for a function subst with signature
  * 
- *     subst: (Exp,Symbol,Num)=>Exp)
+ *     subst: (Exp,Symbol,Num) => Exp
  *
  * The type of the third parameter is "Num" instead of "Exp" because it 
  * is more difficult to get substitution correct when arbitrary expressions
@@ -140,7 +140,7 @@ def makeEval(subst: (Exp,Symbol,Num)=>Exp) : Exp=>Int = {
  * Exercise for self-study: Find an expression that would be transformed
  * into one that is not syntactically legal.
 
- * To get substitution correct, we need to define some terminology:
+ * To see the reason for this, we need to define some terminology (the word "instance" here means "occurence"):
  
  * Deﬁnition(Binding Instance): A binding instance of an identiﬁer is the instance of the identiﬁer that
  * gives it its value. In WAE , the 'x' position of a with is the only binding instance.
@@ -158,7 +158,11 @@ def makeEval(subst: (Exp,Symbol,Num)=>Exp) : Exp=>Int = {
  * symbol in With('x, ..., ...) is a binding instance. The scope of this
  * binding instance is the third sub-term of With.
  
- * OK, with this new terminology, we can make another take at substitution:
+ * Now the reason can be revealed.  Our first attempt failed because we substitue the identifier occurs in the
+ * binding position in the with-expression.  This renders the expression because after substitution illegal 
+ * the binding position is occupied by a Num but an identifier is expected.
+
+ * To correct this mistake, we make another take at substitution:
  
  * Deﬁnition (Substitution, take 2) To substitute identiﬁer i in e with expression v, replace all identiﬁers in
  * e which are not binding instances that have the name i with the expression v.
@@ -210,7 +214,7 @@ val test3 = With('x, 5, Add('x, With('x, 3,'x))) // another test
     case Mul(l,r) => Mul( subst3(l,i,v), subst3(r,i,v))
     case With(x,xdef,body) => With( x,
                                     subst3(xdef,i,v),
-                                    // do not substitute in nested scopes
+                                    // what if forget to substitute into the body?
                                     body)
 }
 
@@ -231,6 +235,7 @@ val test4 = With('x, 5, Add('x, With('y, 3,'x)))
 /* 
  * The inner expression should result in an error, because x has no value. Once again, substitution has changed
  * a correct program into an incorrect one!
+ *
  * Let’s understand what went wrong. Why didn’t we substitute the inner x ? Substitution halts at the with
  * because, by deﬁnition, every with introduces a new scope, which we said should delimit substitution. But
  * this with contains an instance of x, which we very much want substituted! So which is it — substitute
@@ -276,10 +281,10 @@ val test5 = With('x, 5, With('x, 'x, 'x))
 
 /*
  * This program should evaluate to 5, but it too halts with an error. This is because we prematurely stopped
- * substituting for x. We should substitute in the named expression of a with even if the with in question
- * deﬁnes a new scope for the identiﬁer being substituted, because its named expression is still in the scope of
- * the enclosing binding of the identiﬁer.
- * We ﬁnally get a valid programmatic deﬁnition of substitution (relative to the language we have so far):
+ * substituting for x occuring in a bound position. We should substitute in the named expression of a with even if
+ * the with in question deﬁnes a new scope for the identiﬁer being substituted, because its named expression is still
+ * in the scope of the enclosing binding of the identiﬁer.  We ﬁnally get a valid programmatic deﬁnition of substitution
+ * (relative to the language we have so far):
  */
  
  val subst5 : (Exp,Symbol,Num) => Exp = (e,i,v) => e match {
@@ -315,4 +320,4 @@ assert(eval5(test5) == 5) // Success!
   *      free, bound, and binding instances of names and their
   *      scopes correctly.
   */
-     
+
