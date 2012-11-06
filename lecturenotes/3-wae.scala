@@ -214,7 +214,7 @@ val test3 = With('x, 5, Add('x, With('x, 3,'x))) // another test
     case Mul(l,r) => Mul( subst3(l,i,v), subst3(r,i,v))
     case With(x,xdef,body) => With( x,
                                     subst3(xdef,i,v),
-                                    // what if forget to substitute into the body?
+                                    // what if we forget to substitute into the body?
                                     body)
 }
 
