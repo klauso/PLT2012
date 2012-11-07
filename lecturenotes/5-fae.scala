@@ -38,7 +38,7 @@ be submitted as a "pull request". You can of course also send an email to Klaus 
  * in the design and theory of programming languages. 
  *
  * FAE is the language of arithmetic expressions, AE, plus only two additional
- * language constructs: Function definition and function application. 
+ * language constructs: Function abstraction and function application. 
  */
 
  
@@ -53,9 +53,10 @@ implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
 case class App (funExpr: Exp, argExpr: Exp) extends Exp
 
-/* Due to the lambda calculus, the concrete syntax for function definition is
- * often written with a lambda, such as "lambda x. x+3". The Scala syntax
- * for lambda terms is " (x) => x+3", the Haskell syntax is "\x -> x+3".
+/* Due to the lambda calculus, the concrete syntax for function abstraction is
+ * often written with a lambda, such as "lambda x. x+3", thus also called lambda
+ * abstraction. The Scala syntax for lambda terms is " (x) => x+3", the Haskell
+ * syntax is "\x -> x+3".
  * 
  * The concrete syntax for function application is often either 
  * juxtaposition "f a" or using brackets "f(a)". Haskell and the lambda calculus
@@ -157,10 +158,11 @@ assert( subst(Fun('x, Add('x,'y)), 'y, Add('x,5)) == Fun('x0,Add(Id('x0),Add(Id(
 /* OK, equipped with this new version of substitution we can now define the interpreter
  * for this language.
  *
- * But how do we evaluate a function definition? Obviously we cannot return a number.
+ * But how do we evaluate a function abstraction? Obviously we cannot return a number.
  *
  * We realize that functions are also values! Hence we have to broaden the return type of
  * our evaluator to also allow functions as values. 
+ * 
  * For simplicity, we use "Exp" as our return type since it allows us to return both
  * numbers and functions. Later we will become more sophisticated.
  *
@@ -234,7 +236,7 @@ def evalWithEnv0(e: Exp, env: Env0) : Exp = e match {
     }
   }
   case App(f,a) => evalWithEnv0(f,env) match {
-    case Fun(f,body) => evalWithEnv0(body, Map(f -> evalWithEnv0(a,env)))
+    case Fun(x,body) => evalWithEnv0(body, Map(x -> evalWithEnv0(a,env)))
     case _ => sys.error("can only apply functions")
   }
   case _ => e // numbers and functions evaluate to themselves 
@@ -250,17 +252,17 @@ assert(eval(test2) == Num(8))
 
 /* but evalWithEnv0(test2,Map.empty) yields an "identifier not found: 'x" error. 
  * 
- * What can we do to fix this problem?
- *
  * The problem is that we have forgotten the deferred substitutions to be performed
  * in the body of the function.
  *
+ * What can we do to fix this problem?
+ *
  * We could try to replace the second line in the "App" case by
- *     case Fun(f,body) => evalWithEnv0(body, env + (f -> evalWithEnv0(a,env)))
+ *     case Fun(x,body) => evalWithEnv0(body, env + (x -> evalWithEnv0(a,env)))
  * but this would again introduce dynamic scoping.
  *
  * Hence, when we evaluate a function, we do not only have to store the function, but also
- * the environment active when the function was defined. This pair of function and environment
+ * the environment active when the function was created. This pair of function and environment
  * is called a _closure_. The environment stored in the closure is used when the function is
  * eventually applied.
  *
