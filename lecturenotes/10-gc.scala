@@ -158,3 +158,104 @@ def eval(e: Exp, stack: List[Env], store: Store) : Value = e match {
          case _ => sys.error("can only open boxes")
        }
 }
+
+/* Here is one implementation of the Store interface that does not
+ * perform gc. It just runs out of memory once the store is full.
+ */
+
+class NoGCStore(size: Int) extends Store {
+
+  val memory = new ArraySeq[Value](size)
+
+  var nextFreeAddr : Int = 0
+
+  def malloc(stack: List[Env], v: Value) : Int = {
+    val x = nextFreeAddr
+    if (x >= size) sys.error("out of memory")
+    nextFreeAddr += 1
+    update(x, v)
+    x
+  }
+
+  def update(index: Int, v: Value) : Unit = memory.update(index, v)
+
+  def apply(index: Int) = memory(index)
+}
+
+/* Here is a mark-and-sweep garbage collector.
+ */
+
+class MarkAndSweepStore(size: Int) extends Store {
+
+  val memory = new ArraySeq[Value](size)
+
+  var free : Int = size
+
+  var nextFreeAddr : Int = 0
+
+  def malloc(stack: List[Env], v: Value) : Int = {
+    if (free <= 0) gc(stack)
+    if (free <= 0) sys.error("out of memory")
+
+    /* Here we find the next available location in memory via a while-
+     * loop. In order to avoid maintaining a list of available spaces
+     * (because we are lazy), let us assume that no box created in
+     * BCFAE can has an address pointing to a null memory cell (which
+     * also is the case).
+     *
+     * If we ensure the invariant that the variable `free` has always
+     * the number of free memory space, then the following loop will
+     * always halt. The nontermination situation will generate an out-
+     * of-memory error and the program will abort.
+     */
+
+    while (memory(nextFreeAddr) != null) {
+      nextFreeAddr += 1
+      if (nextFreeAddr == size) nextFreeAddr = 0
+    }
+
+    free -= 1
+    update(nextFreeAddr, v)
+    nextFreeAddr
+  }
+
+  def update(index: Int, v: Value) : Unit = memory.update(index, v)
+
+  def apply(index: Int) = memory(index)
+
+  def allAddrInVal(v: Value) : Set[Int] = v match {
+    case AddressV(a)      => Set(a)
+    case NumV(_)          => Set.empty
+    case ClosureV(f, env) => allAddrInEnv(env)
+  }
+
+  def allAddrInEnv(env: Env) : Set[Int] =
+    env.values.map(allAddrInVal _).fold(Set.empty)(_ union _)
+
+  def mark(seed: Set[Int]) : Unit = {
+    seed.foreach(memory(_).marked = true)
+    val newAddresses = seed.flatMap(
+                         ad => allAddrInVal(memory(ad))
+                       ).filter(!memory(_).marked)
+    if(newAddresses != Set.empty) {
+      mark(newAddresses)
+    }
+  }
+
+  def sweep() : Unit = {
+    memory.indices.foreach(
+      index => if (!memory(index).marked) {
+                 free += 1
+                 memory(index) = null
+               }
+               else {
+                 /* Reset `marked` flag for the next gc */
+                 memory(index).marked = false
+               }
+    )
+  }
+
+  def gc(stack: List[Env]) : Unit = {
+    sys.error("TODO: Implement me!")
+  }
+}
