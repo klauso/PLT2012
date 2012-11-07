@@ -51,10 +51,10 @@ case class Seq(e1: Exp, e2: Exp) extends Exp // sequencing of expressions
 
 /* Let's consider a sample program in this language. */
 
-val test = wth('b, NewBox(0), 
-             Seq(
-               SetBox('b, Add(1, OpenBox('b))), 
-               OpenBox('b)))
+val test1 = wth('b, NewBox(0), 
+              Seq(
+                SetBox('b, Add(1, OpenBox('b))), 
+                OpenBox('b)))
 
 /* Let's consider the question how the interpreter branch for
  * sequencing coud look like.
@@ -84,7 +84,7 @@ val test = wth('b, NewBox(0),
  */
 
 val test2 = wth('a, NewBox(1),
-              wth('f, Fun('x, Add('x, Openbox('a))),
+              wth('f, Fun('x, Add('x, OpenBox('a))),
                 Seq(SetBox('a,2),
                   App('f, 5))))
 
@@ -161,11 +161,11 @@ val test3 = wth('switch, NewBox(0),
 
 
 ID      Exp                     Value   Env             Store
-A       wth(..                          'switch -> ..   0 -> NumV(0)
+A       wth(..                          'switch -> ..   1 -> NumV(0)
 B        wth(..                         'toggle -> ..
 C         Add(..
-D          App('toggle)         1                       0 -> NumV(1)
-E          App('toggle)         0                       0 -> NumV(0)
+D          App('toggle)         1                       1 -> NumV(1)
+E          App('toggle)         0                       1 -> NumV(0)
 F         Add(0,1)              1
 
 
@@ -176,17 +176,97 @@ F         Add(0,1)              1
  */
 
 def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
+  /* All expressions whose evaluation does not alter the store just
+   * return s.
+   */
   case Num(n) => (NumV(n), s)
   case Id(x) => (env(x), s)
   case f@Fun(_, _) => (ClosureV(f, env), s)
+  /* In recursive cases we have to thread the store through the
+   * evaluation. In particular, we define the order of evaluation
+   * explicitly through data flow dependencies.
+   */
   case If0(cond, thenExp, elseExp)
     => eval(cond, env, s) match {
-         case (NumV(0), s2) => eval(thenExp, env, s2)
-         // do not detect type error
-         // case _          => eval(elseExp, env, s2)
-         // detect type error
-         case (NumV(_), s2) => eval(elseExp, env, s2)
+         case (NumV(0), s1) => eval(thenExp, env, s1)
+         case (_, s1)       => eval(elseExp, env, s1)
+
+         /* An alternative that enfoces runtime type-correctness of
+          * the conditional expression:
+
+         case (NumV(_), s1) => eval(elseExp, env, s1)
          case _             => sys.error("can only test if a number is 0")
+
+          */
+       }
+
+  case Add(l, r)
+    => eval(l, env, s) match {
+         case (NumV(v1), s1)
+           => eval(r, env, s1) match {
+                case (NumV(v2), s2) => (NumV(v1 + v2), s2)
+                case _ => sys.error("can only add numbers")
+              }
+         case _
+           => sys.error("can only add numbers")
+       }
+
+  case Mul(l, r)
+    => eval(l, env, s) match {
+         case (NumV(v1), s1)
+           => eval(r, env, s1) match {
+                case (NumV(v2), s2) => (NumV(v1 * v2), s2)
+                case _ => sys.error("can only multiply numbers")
+              }
+         case _ => sys.error("can only multiply numbers")
+       }
+
+  case App(f, a)
+    => eval(f, env, s) match {
+         case (ClosureV(f, closureEnv), s1)
+           => eval(a, env, s1) match {
+                case (av, s2)
+                  => eval(f.body, closureEnv + (f.param -> av), s2)
+              }
+         case _ => sys.error("can only apply functions")
+       }
+
+  /* In a sequence, we ignore the result of evaluating e1 but not its
+   * effect on the store.
+   */
+  case Seq(e1, e2) => eval(e2, env, eval(e1, env, s)._2)
+
+  /* A new box is created by putting it into the store at a new
+   * address.
+   */
+  case NewBox(e: Exp)
+    => eval(e, env, s) match {
+         case (v, s1) => {
+           val a = nextAddress
+           (AddressV(a), s1 + (a -> v))
+         }
+       }
+
+  /* Setting a box is now a two-step process: First evaluate b to an
+   * address, then lookup and update the value associated to the
+   * address in the store. Note that "updated" is a functional method.
+   */
+  case SetBox(b: Exp, e: Exp)
+    => eval(b, env, s) match {
+         case (AddressV(a), s1)
+           => eval(e, env, s1) match {
+                case (ev, s2) => (ev, s2.updated(a, ev))
+              }
+         case _ => sys.error("can only set boxes")
+       }
+
+  /* OpenBox uses the same two-step process but does not update the
+   * store.
+   */
+  case OpenBox(b: Exp)
+    => eval(b, env, s) match {
+         case (AddressV(a), s1) => (s1(a), s1)
+         case _                 => sys.error("can only open boxes")
        }
 }
 
