@@ -270,3 +270,72 @@ def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
        }
 }
 
+/* From an implementation point of view, our interpreter has the
+ * problem that nothing is ever removed from the store. One
+ * possibility would be to add an operation "removeBox" or the like to
+ * the language, but this would lead to dangling pointers and all the
+ * problems associated with manual memory management.
+ *
+ * Our model of stores is sufficient to illustrate how modern
+ * languages deal with memory management: By garbage collection.
+ * Garbage collectors automatically reclaim memory that is no longer
+ * referenced from within the active part of the computation. We can
+ * model a (naive) mark-and-sweep garbage collector as follows:
+ */
+
+def gc(env: Env, store:Store) : Store = {
+
+  def allAddrInVal(v: Value) : Set[Address] = v match {
+    case AddressV(a)      => Set(a)
+    case NumV(_)          => Set.empty
+    case ClosureV(f, env) => allAddrInEnv(env)
+  }
+
+  def allAddrInEnv(env: Env) : Set[Address] =
+    env.values.map(allAddrInVal _).fold(Set.empty)(_ union _)
+
+  def mark(seed: Set[Address]) : Set[Address] = {
+    val newAddresses = seed.flatMap(ad => allAddrInVal(store(ad)))
+    if (newAddresses.subsetOf(seed)) seed
+    else mark(seed union newAddresses)
+  }
+
+  val marked = mark(allAddrInEnv(env)) // mark ...
+  store.filterKeys(marked(_))           // and sweep!
+}
+
+val teststore = Map(
+  6  -> NumV(42),
+  7  -> NumV(6),
+  8  -> AddressV(6),
+  9  -> AddressV(7),
+  10 -> ClosureV(Fun('x, 'y), Map('y -> AddressV(8)))
+)
+
+/*
+
+10 -> 8 -> 6
+
+      9 -> 7
+
+*/
+
+assert(gc(Map('a -> AddressV(10)), teststore) == teststore - 7 - 9)
+
+/* Note that garbage collectors only _approximate_ the set of
+ * semantically disposable store entities. Even with garbage
+ * collectors, applications may very well suffer from memory leaks.
+ * The approximation should be _safe_, in the sense that a datum is
+ * never reclaimed when it is used by subsequent computations.
+ * Furthermore, it must reclaim enough garbage to be actually useful
+ * ---reachability has turned out to be a rather useful (and sound)
+ * approximation of semantic disposability. Garbage collectors must
+ * also be efficient. Efficiency of GC is a huge research topic that
+ * we are not going to discuss. One efficiency problem with garbage
+ * collectors based on reachability that we want to mention is the
+ * "stop-the-world" phenomenon.
+ *
+
+   http://en.wikipedia.org/wiki/Garbage_collection_(computer_science)
+
+ */
