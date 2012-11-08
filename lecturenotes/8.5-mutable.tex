@@ -1,0 +1,148 @@
+% latex
+\documentclass{beamer}
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+\usefonttheme{serif}\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{background canvas}{bg=}
+\begin{document}
+
+\begin{frame}
+\frametitle{Transcript: advantages of mutation}
+\vtop{\hsize=0.5\hsize
+\begin{itemize}
+\pause
+\item Efficiency
+\begin{itemize}
+\item Space (esp. in call stack)
+\item Time
+\end{itemize}
+\pause
+\item Loops are easier to understand than recursion
+\pause
+\item Memoisation is difficult to express declaratively
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{Transcript: disadvantages of mutation}
+\begin{itemize}
+\pause
+\item Laziness causes problems
+\pause
+\item Von-Neumann bottleneck
+\pause
+\item Lack of referential integrity
+
+(Wegen Reihenfolgeabhängigkeit)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The book}
+Peter Van Roy, Seif Haridi.
+
+Concepts, Techniques, and Models of Computer Programming.
+
+MIT Press, March 2004.
+
+Section 4.8, page 313.
+\end{frame}
+
+\begin{frame}
+\frametitle{Subjectivity}
+Different people may find different models easier to use, because of
+their differing knowledge and background. The issue is not the precise
+definition of \emph{natural}, but the fact that such a definition
+exists for each person, even though it might be different for
+different people.
+\end{frame}
+
+\begin{frame}
+\frametitle{John Backus's Turing Award lecture}
+The assignment statement is the von Neumann bottleneck of programming
+languages and keeps us thinking in word-at-a-time terms in much the
+same way the computer's bottleneck does.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Edsger W. Dijkstra's review}
+A naive implementation [of immutable matrices] that first copies those
+matrices and then kicks out half of it again seems absolutely
+unacceptable on any machine---von Neumann or not.
+
+\pause
+\begin{verbatim}
+www.haskell.org/haskellwiki/GHC/Memory_Management
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\frametitle{Naturalness versus efficiency}
+A programme is \emph{natural} if very little code is needed just for
+technical reasons unrelated to the problem at hand.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{A natural Haskell programme}
+\begin{verbatim}
+fib 0 = 1
+fib 1 = 1
+fib n = fib (n - 2) + fib (n - 1)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{A fast Haskell programme}
+\begin{verbatim}
+fib2 n =
+ let loop 0 prev next = next
+     loop m prev next = loop (m - 1) next (prev + next)
+ in
+     loop n 0 1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\frametitle{A matter of compiler intelligence?}
+It is unrealistic to expect the compiler to rewrite your programme.
+Even after several decades of research, no such compiler exists for
+general-purpose programming.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Functional means natural?}
+\begin{verbatim}
+case Letrec(x, e, body) => {
+  val mutableenv = scala.collection.mutable.Map() ++ env
+  mutableenv += x -> eval(e, mutableenv)
+  eval(body,mutableenv)
+}
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Functional means natural?}
+Circular lists in Haskell
+
+\begin{verbatim}
+www.haskell.org/haskellwiki/Tying_the_Knot
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\frametitle{Simplicity: where?}
+The declarative model is one of the simplest of all. It has serious
+limitations for some applications. There are more expressive models
+that overcome these limitations, at the price of sometimes making
+reasoning more complicated.
+\end{frame}
+
+\begin{frame}
+\frametitle{Simplicity: where?}
+The more expressive models are not \textit{better} than the others,
+since they do not always give simple programmes and reasoning in them
+is usually harder.
+\end{frame}
+
+\end{document}
