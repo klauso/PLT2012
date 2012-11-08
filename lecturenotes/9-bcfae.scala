@@ -11,10 +11,9 @@ corrections/extensions/improvements can be submitted as a "pull
 request". You can of course also send an email to Klaus Ostermann */
 
 /* Today we study _mutation_. More specifically, we want to equip our
- * language with mutable data structures. Typical mutable data
- * structures. Typical mutable data structures in common languages
- * include objects with mutable fields or structures/records in
- * languages like C or Pascal.
+ * language with mutable data structures.  Typical mutable data
+ * structures in common languages include objects with mutable fields
+ * or structures/records in languages like C or Pascal.
  *
  * We will study a particularly simple mutable data structure: Boxes.
  * In OO parlance, boxes can be thought of as an object with a single
@@ -49,15 +48,17 @@ case class SetBox(b: Exp, e: Exp) extends Exp // assign to a box
 case class OpenBox(b: Exp) extends Exp // read value in a box
 case class Seq(e1: Exp, e2: Exp) extends Exp // sequencing of expressions
 
-/* Let's consider a sample program in this language. */
+/* In this new language, the following sample program */
 
 val test1 = wth('b, NewBox(0), 
               Seq(
                 SetBox('b, Add(1, OpenBox('b))), 
                 OpenBox('b)))
 
-/* Let's consider the question how the interpreter branch for
- * sequencing coud look like.
+/* should give as result 1 in a proper implementation. */
+
+/* Let's consider how our interpreter could handle sequencing.
+ * 
  * Here is an attempt:
 
      case Seq(e1, e2) => {
@@ -65,22 +66,19 @@ val test1 = wth('b, NewBox(0),
        eval(e2, env)
      }
 
- * However, this cannot possibly be correct. As long as our
- * interpreter does not use mutation, there is no way now the
- * evaluation of e1 could have any effect on the evaluation of e2.
- * However, this must obviously be the case, as the example above
- * illustrates.
+ * This cannot be correct. As long as our interpreter does not use mutation,
+ * evaluation could not make any changes to the environment, hence there is
+ * no way the evaluation of e1 could have any effect on the evaluation of e2.
  *
- * To shed light on the actual nature of mutation, we will not use
- * mutation in our interpreter. (Cf. discussion about meta-
- * interpretation vs. syntactic interpretation in one of the following
- * lectures.)
+ * In order to demostrate the actual nature of mutation, we will not use
+ * mutation in our meta-language to implement mutation in our object language.
+ * That said, we will not use a mutable data structure to implement environment
+ * in our interpreter.
  *
- * One possibility is that the interpreter always returns a possibly
- * updated environment in addition to the computed value. However,
- * this does not work: First, it would introduce once more a form of
- * dynamic scoping (which we want to avoid), and second, it would not
- * work when closures are involved. Consider the following example:
+ * Instead, one may turn to the so-called environment-passing style, in which
+ * the interpreter returns also a possibly updated environment together with the
+ * computed value when it evaluates an expression.  However, this solution does
+ * not always work.  Consider the following example:
  */
 
 val test2 = wth('a, NewBox(1),
@@ -89,25 +87,32 @@ val test2 = wth('a, NewBox(1),
                   App('f, 5))))
 
 /* The mutation should affect the box stored in the closure bound to
- * f. But with the implementation strategy described above it would
+ * f.  But with the implementation strategy described above it would
  * not.
  *
  * Note that changing the value of a in the example is not a vialation
- * of static scope. Scoping tells us which occurrence of an identifier
- * is bound to which introduction of an identifier, but not its value.
+ * of static scope.  Scoping only says where an identifier is bound;
+ * it does not say to what an identifier is bound, in particular, whether
+ * whatever bound to the identifier is fixed.  Indeed, the variable a is
+ * bound to the same box in both the static environment where the function
+ * f is created and the dynamic environment where the function f is applied.
  *
- * Hence, the following two evaluation strategies are both flawed:
+ * As before, when applying the function f to the argument 5, we can choose
+ * either
  *
- * 1) Using the environment (which maps a to 1) stored in the closure
- *    for f when evaluating f(5). The program will evaluate to 6
- *    rather than 7.
+ * 1) To use the static environment (where the variable a is bound to a
+ *    boxed 1) stored in the closure created for f.
  *
- * 2) Using the environment present at the time of procedure
- *    invocation: f(5). This will record the change but reintroduces
- *    dynamic scope.
+ * 2) Or to use the dynamic environment (where the variable a is bound to a
+ *    boxed 2) present at the time of applying f.
  *
- * Insight: We need _two_ repositories of information. The environment
- * is the guardian of static scope and maps symbols to values.
+ * The first choice leads the program to evaluate to 6 rather than the
+ * expected 7.  The second will record the change to the box, but it
+ * reintroduces dynamic scoping.  So both choices do not work.
+ * 
+ * Insight: We need _two_ repositories of information.
+ * 
+ * One, the environment, guards static scope.
  */
 
 sealed abstract class Value
@@ -115,8 +120,7 @@ type Env = Map[Symbol, Value]
 case class NumV(n: Int) extends Value
 case class ClosureV(f: Fun, env: Env) extends Value
 
-/* The other, which we call _store_, is responsible for tracking
- * dynamic changes.
+/* The other, which we call _store_, is trackis dynamic changes.
  *
  * Determining the value inside a box will become a two-step process:
  * We first evaluate the box expression to an _address_, and then use
@@ -142,7 +146,7 @@ def nextAddress : Address = {
 
 /* Note: We promised to implement the interpreter without using
  * mutation. Here we did use mutation, but this musage of mutation is
- * not essential: Instead we could just search for the largest address
+ * not essential: we could instead just search for the largest address
  * in the present store and add one to it.
  *
  * Let's now discuss the evaluation of FAE with conditionals and
@@ -170,9 +174,11 @@ F         Add(0,1)              1
 
 
  * Insight:
- * We must pass the current store in and update store out of every
- * expression's evaluation. This is called store-passing style.
- * Consequently, we have to update the type of our evaluator.
+ *
+ * We must pass the current store in to evaluate every expression and pass
+ * the possibly updated store out after the evaluation.  This is called
+ * store-passing style.  Consequently, we have to update the type of our
+ * evaluator.
  */
 
 def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
@@ -277,7 +283,7 @@ def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
  * problems associated with manual memory management.
  *
  * Our model of stores is sufficient to illustrate how modern
- * languages deal with memory management: By garbage collection.
+ * languages deal with memory management: by garbage collection.
  * Garbage collectors automatically reclaim memory that is no longer
  * referenced from within the active part of the computation. We can
  * model a (naive) mark-and-sweep garbage collector as follows:
