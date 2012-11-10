@@ -62,7 +62,7 @@ val sum = Letrec('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n,-1))))), App(
  * envbody = env + (x -> ClosureV(Fun('n, ...'sum..), envbody))
  *
  * Obviously envbody must be circular. There are different ways to create such a circular
- * environment. We will choose mutation to create a cycle. More specifically, we use
+ * environment. We will choose mutation to create a circle. More specifically, we use
  * a mutable Map (initialized to env) as environment when evaluating e and then mutate
  * the environment to include a mapping from x to the evaluated closure.
  *
@@ -100,8 +100,8 @@ def eval(e: Exp, env: Env) : Value = e match {
   }
   case Letrec(x,e,body) => {
     val mutableenv =  scala.collection.mutable.Map() ++ env // create mutable map, initialize it to env
-    mutableenv += x -> eval(e,mutableenv)  // evaluate e and then create cycle in the environment
-    eval(body,mutableenv) // evaluate body in cyclic environment
+    mutableenv += x -> eval(e,mutableenv)  // evaluate e and then create circle in the environment
+    eval(body,mutableenv) // evaluate body in circular environment
   }
 }
 
