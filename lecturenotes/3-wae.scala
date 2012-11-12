@@ -159,8 +159,8 @@ def makeEval(subst: (Exp,Symbol,Num)=>Exp) : Exp=>Int = {
  * binding instance is the third sub-term of With.
  
  * Now the reason can be revealed.  Our first attempt failed because we substitue the identifier occurs in the
- * binding position in the with-expression.  This renders the expression because after substitution illegal 
- * the binding position is occupied by a Num but an identifier is expected.
+ * binding position in the with-expression.  This renders the expression illegal because after substitution
+ * the binding position where an identifier was expected is now occupied by a Num.
 
  * To correct this mistake, we make another take at substitution:
  
