@@ -15,7 +15,7 @@ be submitted as a "pull request". You can of course also send an email to Klaus 
  * or whether it is implemented using more primitive language constructs.
  * The first case is called meta-interpretation, the second case syntactic interpretation. 
  *
- * Meta-interpretation can be convenient if our purpose if we are not interested in having
+ * Meta-interpretation can be convenient if we are not interested in having
  * control over the exact meaning of the construct, or if the way the meta-language handles
  * this construct is just what we want for our object language. 
  * Syntactic interpretation is required if we want to understand what the language feature
