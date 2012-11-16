@@ -23,7 +23,7 @@ def progSimple = {
  * - then the first number is submitted, a form to enter the second number is shown
  * - when the second number is submitted, a form with the result is generated and shown.
  *
- * Even this “addition server” is difficult to implement. Because http is a stateless protocol (for good reasons),
+ * Even this "addition server" is difficult to implement. Because http is a stateless protocol (for good reasons),
  * every web program is basically forced to terminate after every request. This means that 
  * the Web developer must turn this application into three programs:
  * (a) The first program displays the first form.
@@ -34,13 +34,14 @@ def progSimple = {
  * Because the value entered in the first form is needed by the third program to compute its output, this
  * value must somehow be transmitted between from the first program to the third. This is typically done
  * by using the hidden field mechanism of HTML.
- * 3. Suppose, instead of using a hidden field, the application developer used a Java Servlet session object,
+ *
+ * Suppose, instead of using a hidden field, the application developer used a Java Servlet session object,
  * or a database field, to store the first number. (Application developers are often pushed to do this
  * because that is the feature most conveniently supported by the language and API they are employing.)
  * Then, if the developer were to exploratorily open multiple windows
  * the application can compute the wrong answer. 
  
- * Hence, the actual program a web developer has the structure of the following program.
+ * Hence, the actual program in a web developer's mind has the structure of the following program.
  * An actual web program is of course more complicated, but this primitive model of web
  * programming is sufficient to explain the problem. */
  
@@ -150,10 +151,11 @@ def test = println("Total sum: "+allCosts(testData))
 
 /* This version of allCosts is clearly not web-friendly, because it uses inputNumber,
  * which we do not know how to implement for the web.
- * The first thing to observe is that on its own, tally is not a complete program: it doesn’t do anything!
- * Instead, it is a library procedure that may be used in many different contexts. Because it has a Web inter-
- * action, however, there is the danger that at the point of interaction, the rest of the computation—i.e., the
- * computation that invoked allCosts — will be lost. To prevent this, allCosts must consume an extra argument, 
+ *
+ * The first thing to observe is that on its own, tally is not a complete program: it doesn't do anything!
+ * Instead, it is a library procedure that may be used in many different contexts. Because it has a Web interaction,
+ * however, there is the danger that at the point of interaction, the rest of the computation --- that is, the
+ * computation that invoked allCosts --- will be lost. To prevent this, allCosts must consume an extra argument, 
  * a continuation, that represents the rest of the pending computation. To signify this change in contract, we will use
  * the convention of appending _k to the name of the procedure and k to name the continuation parameter.
  */ 
@@ -178,12 +180,14 @@ def allCosts_k(itemList: List[String], k: Int => Nothing) : Nothing = itemList m
  * That is, the receiver of the Web interaction is invoked with the cost of the first item. When allCosts_k is invoked
  * recursively, it is applied to the rest of the list. Its receiver must therefore receive the tally of costs of the
  * remaining items. That explains the pattern in the receiver.
+ *
  * The only problem is, where does a continuation ever get a value? We create larger-and-larger continuation on
  * each recursive invocation, but what ever invokes them?
+ *
  * Here is the same problem from a different angle (that also answers the question above). Notice that each
  * recursive invocation of allCosts_k takes place in the aftermath of a Web interaction. We have already seen how
  * the act of Web interaction terminates the pending computation. Therefore, when the list empties, where
- * is the value 0 going? Presumably to the pending computation—but there is none. Any computation that
+ * is the value 0 going? Presumably to the pending computation, but there is none. Any computation that
  * would have been pending has now been recorded in k, which is expecting a value. Therefore, the correct
  * transformation of this procedure is:
  */
@@ -204,7 +208,8 @@ def testweb = allCosts_k(testData, m => webdisplay("Total sum: "+m))
 /* Using map, we can rephrase allCosts as follows. */
 def allCosts2(itemList: List[String]) : Int = map(itemList, (x:String) => inputNumber("Cost of item "+x+":")).sum
 
-/* What we we want to use map in allCosts_k? 
+/* What if we we want to use map in allCosts_k?
+ *
  * Just using webread_k in place of inputNumber will not work, since webread_k expects an additional parameter.
  * Obviously we must somehow modify the definition of map. But what can we pass as second parameter in the call
  * to f? 
@@ -229,12 +234,12 @@ def allCosts2_k(itemList: List[String], k: Int => Nothing) : Nothing =
  * made this left-to-right order of evaluation explicit in our transformation.
  * 
  * 2. The transformation we use is global, namely it (potentially) affects all the procedures in the program
- * by forcing them all to consume an extra continuation as an argument. We usually don’t have a choice as
+ * by forcing them all to consume an extra continuation as an argument. We usually don't have a choice as
  * to whether or not to transform a procedure. Suppose f invokes g and g invokes h, and we transform
- * f to f_k but don’t transform g or h. Now when f_k invokes g and g invokes h, suppose h consumes
+ * f to f_k but don't transform g or h. Now when f_k invokes g and g invokes h, suppose h consumes
  * input from the Web. At this point the program terminates, but the last continuation procedure (necessary
  * to resume the computation when the user supplies an input) is the one given to f_k, with all record of
- * g and h erased.
+ * g and h lost.
  * 
  * 3. This transformation sequentializes the program. Given a nested expression, it forces the programmer
  * to choose which sub-expression to evaluate first (a consequence of the first point above); further, every
