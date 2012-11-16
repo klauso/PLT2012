@@ -248,17 +248,15 @@ class MarkAndSweepStore(size: Int) extends Store {
 
   def sweep() : Unit = {
     memory.indices.foreach(
-      index => if (memory(index) == null) {
-                 /* Free memory cell encountered; no work necessary */
-               }
-               else if (!memory(index).marked) {
-                 free += 1
-                 memory(index) = null
-               }
-               else {
-                 /* Reset `marked` flag for the next gc */
-                 memory(index).marked = false
-               }
+      index => if (memory(index) != null)  /* Otherwise, free memory cell encountered, no work to do */
+                 if (memory(index).marked) {
+                   /* Reset `marked` flag for the next gc */
+                   memory(index).marked = false
+                 }
+                 else {
+                   free += 1
+                   memory(index) = null
+                 }
     )
   }
 
