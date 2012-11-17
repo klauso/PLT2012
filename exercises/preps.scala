@@ -115,8 +115,7 @@ def test0 : Imp =
  * (let ((x 1))
  *   (let ((f (lambda (y) (+ x y))))
  *     (set! x 2)
- *     (f 3)
- *     x ) )  
+ *     (f 3) ) )
  */
 
 def test1 : Imp =
