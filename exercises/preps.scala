@@ -125,27 +125,25 @@ def test1 : Imp =
                , Cmb(Smb('f), Nml(3)) ) ) )
 
 /*
- * (let ((x 1))
- *   (let ((counter (lambda (y)
- *                    (let ((z y))
- *                      (lambda (s)
- *                        (if (= s 0)
- *                            z
- *                            (begin (set! z (+ z s))
- *                                   z ) ) ) ) ) ) )
- *      (let ((count (counter 0)))
- *        (count 1)
- *        (count 2) ) ) )
+ * (let ((counter (lambda (y)
+ *                  (let ((z y))
+ *                    (lambda (s)
+ *                      (if (= s 0)
+ *                          z
+ *                          (begin (set! z (+ z s))
+ *                                 z ) ) ) ) ) ) )
+ *    (let ((count (counter 0)))
+ *      (count 1)
+ *      (count 2) ) )
  */
 
 def test2 : Imp =
-  Let( 'x, Nml(1)
-     , Let( 'counter, Lam('y, Let( 'z, Smb('y)
-                                 , Lam('s, If0( Smb('s)
-                                              , Smb('z)
-                                              , Seq( Set('z, Pls(Smb('z), Smb('s)))
-                                                   , Smb('z) ) ) ) ) )
-          , Let( 'count, Cmb(Smb('counter), Nml(0))
-               , Seq( Cmb(Smb('count), Nml(1))
-                    , Cmb(Smb('count), Nml(2)) ) ) ) )
+  Let( 'counter, Lam('y, Let( 'z, Smb('y)
+                            , Lam('s, If0( Smb('s)
+                                         , Smb('z)
+                                         , Seq( Set('z, Pls(Smb('z), Smb('s)))
+                                              , Smb('z) ) ) ) ) )
+     , Let( 'count, Cmb(Smb('counter), Nml(0))
+          , Seq( Cmb(Smb('count), Nml(1))
+               , Cmb(Smb('count), Nml(2)) ) ) )
 
