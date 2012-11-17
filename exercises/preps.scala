@@ -2,7 +2,7 @@
  * The Power and Responsibility of Environment-Passing Style
  *
  * Author: Yi Dai
- * Data: 2012-11-17
+ * Date: 2012-11-17
  */
 
 sealed abstract class Imp
