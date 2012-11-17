@@ -102,13 +102,24 @@ def idCnt : Cnt = (x, y) => (x, y)
 
 /*
  * (let ((x 1))
+ *   (+ (let ((x 2)) x)
+ *      x ) )
+ */
+
+def test0 : Imp =
+  Let( 'x, Nml(1)
+     , Pls( Let('x, Nml(2), Smb('x)) 
+          , Smb('x) ) )
+
+/*
+ * (let ((x 1))
  *   (let ((f (lambda (y) (+ x y))))
  *     (set! x 2)
  *     (f 3)
  *     x ) )  
  */
 
-def test0 : Imp =
+def test1 : Imp =
   Let( 'x, Nml(1)
      , Let( 'f, Lam('y, Pls(Smb('x), Smb('y)))
           , Seq( Set('x, Nml(2))
@@ -128,7 +139,7 @@ def test0 : Imp =
  *        (count 2) ) ) )
  */
 
-def test1 : Imp =
+def test2 : Imp =
   Let( 'x, Nml(1)
      , Let( 'counter, Lam('y, Let( 'z, Smb('y)
                                  , Lam('s, If0( Smb('s)
