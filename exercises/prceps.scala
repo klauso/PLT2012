@@ -1,5 +1,5 @@
 /* 
- * The Power and Responsibility of Environment-Passing Style
+ * The Power and Responsibility of Continuative-Environment-Passing Style
  *
  * Author: Yi Dai
  * Date: 2012-11-17
