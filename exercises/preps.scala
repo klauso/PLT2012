@@ -147,3 +147,17 @@ def test2 : Imp =
           , Seq( Cmb(Smb('count), Nml(1))
                , Cmb(Smb('count), Nml(2)) ) ) )
 
+/*
+ * (let ((x 1))
+ *   (let ((f (lambda (y)
+ *              (set! x (+ x y)) ) ) )
+ *     (f 2)
+ *     x ) )
+ */
+
+def test3 : Imp =
+  Let( 'x, Nml(1)
+     , Let( 'f, Lam('y, Set('x, Pls(Smb('x), Smb('y))))
+          , Seq( Cmb(Smb('f), Nml(2))
+               , Smb('x) ) ) )
+
