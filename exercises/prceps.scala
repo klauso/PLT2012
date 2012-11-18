@@ -31,7 +31,7 @@ type Cnt = (Imp, Env) => (Imp, Env)
 
 def lookup[A, B](a : A, al : List[(A, B)]) : B = {
   if (al.isEmpty)
-    sys.error("not found: " + a)
+    sys.error("no association found for: " + a)
   else if (((al.head)_1) == a)
     (al.head)_2
   else
