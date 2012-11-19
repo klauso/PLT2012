@@ -45,10 +45,57 @@ def update[A, B](a : A, b : B, al : List[(A, B)]) : List[(A, B)] = {
     al.head :: update(a, b, al.tail)
 }
 
-
+def norm(imp : Imp, env : Env) : (Imp, Env) = imp match {
+  case Nml(_) => (imp, env)
+  case Clo(_, _, _) => (imp, env)
+  case Smb(nom) => (lookup(nom, env), env)
+  case Pls(lhs, rhs)=> {
+    val (nf0, env0) = norm(lhs, env)
+    nf0 match {
+      case Nml(num0) => {
+        val (nf1, env1) = norm(rhs, env0)
+        nf1 match {
+          case Nml(num1) => (Nml(num0 + num1), env1)
+          case _ => sys.error("not a number designator: " + rhs)
+        }
+      }
+      case _ => sys.error("not a number designator: " + lhs)
+    }
+  }
+  case If0(cnd, csq, alt) => {
+    val (nf0, env0) = norm(cnd, env)
+    nf0 match {
+      case Nml(0) => norm(csq, env0)
+      case Nml(_) => norm(alt, env0) 
+      case _ => sys.error("not a number designator: " + cnd)
+    }
+  }
+  case Lam(prm, bod) => (Clo(env, prm, bod), env)
+  case Cmb(opr, opd) => {
+    val (nf0, env0) = norm(opr, env)
+    nf0 match {
+      case Clo(cenv, prm, bod) => {
+        val (nf1, env1) = norm(opd, env0)
+        val (nf, lenv) = norm(bod, (prm, nf1) :: cenv)
+        (nf, opr match {
+               case Smb(nom) => update(nom, Clo(lenv.tail, prm, bod), env1)
+               case _ => env1
+             } )
+      }
+      case _ => sys.error("not a function designator: " + opr)
+    }
+  }
+  case Seq(zth, fst) => {
+    val (_, env0) = norm(zth, env)
+    norm(fst, env0)
+  }
+  case Set(nom, dfn) => {
+    val (nf, env0) = norm(dfn, env)
+    (nf, update(nom, nf, env0))
+  }
+}
 
 def emEnv : Env = List()
-def idCnt : Cnt = (x, y) => (x, y)
 
 /*
  * (let ((x 1))
