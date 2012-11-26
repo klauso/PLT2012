@@ -8,7 +8,7 @@
 sealed abstract class Imp
 case class Nml(num : Int) extends Imp
 case class Var(nom : Symbol) extends Imp
-case class Pls(lhs : Imp, rhs : Imp) extends Imp
+case class Add(lhs : Imp, rhs : Imp) extends Imp
 case class If0(cnd : Imp, csq : Imp, alt : Imp) extends Imp
 case class Lam(prm : Symbol, bod : Imp) extends Imp
 case class Rdx(opr : Imp, opd : Imp) extends Imp
@@ -51,7 +51,7 @@ def norm(imp : Imp, env : Env, cnt : Cnt) : (Imp, Env) = imp match {
   case Nml(_) => cnt(imp, env)
   case Clo(_, _, _) => cnt(imp, env)
   case Var(nom) => cnt(lookup(nom, env), env)
-  case Pls(lhs, rhs) =>
+  case Add(lhs, rhs) =>
     norm( lhs, env
         , (nf0, env0) => nf0 match {
             case Nml(num0) =>
@@ -104,25 +104,36 @@ def idCnt : Cnt = (x, y) => (x, y)
  *      x ) )
  */
 
-def test0 : Imp =
+val test0 : Imp =
   Let( 'x, Nml(1)
-     , Pls( Let('x, Nml(2), Var('x)) 
+     , Add( Let('x, Nml(2), Var('x)) 
           , Var('x) ) )
 
 /*
- * (let ((x 0))
+ * (let ((x 1))
+ *   (set! x 2)
+ *   (+ x 3) )
+ */
+
+val test1 : Imp =
+  Let( 'x, Nml(1)
+     , Seq( Set('x, Nml(2))
+          , Add(Var('x), Nml(3)) ) )
+
+/* Limit */
+
+/*
+ * (let ((x 1))
  *   (let ((f (lambda (y) (+ x y))))
  *     (set! x 2)
  *     (f 3) ) )
  */
 
-def test1 : Imp =
+val test2 : Imp =
   Let( 'x, Nml(1)
-     , Let( 'f, Lam('y, Pls(Var('x), Var('y)))
+     , Let( 'f, Lam('y, Add(Var('x), Var('y)))
           , Seq( Set('x, Nml(2))
                , Rdx(Var('f), Nml(3)) ) ) )
-
-/* Limit */
 
 /*
  * (let ((count (let ((counter 0))
@@ -133,9 +144,9 @@ def test1 : Imp =
  *          (count 2) ) )
  */
 
-def test2 : Imp =
+val test3 : Imp =
   Let( 'count, Let( 'counter, Nml(0)
-                  , Lam('s, Seq( Set('counter, Pls(Var('counter), Var('s)))
+                  , Lam('s, Seq( Set('counter, Add(Var('counter), Var('s)))
                                , Var('counter) ) ) )
      , Seq( Rdx(Var('count), Nml(1))
           , Rdx(Var('count), Nml(2)) ) )
@@ -148,9 +159,9 @@ def test2 : Imp =
  *     x ) )
  */
 
-def test3 : Imp =
+val test4 : Imp =
   Let( 'x, Nml(1)
-     , Let( 'f, Lam('y, Set('x, Pls(Var('x), Var('y))))
+     , Let( 'f, Lam('y, Set('x, Add(Var('x), Var('y))))
           , Seq( Rdx(Var('f), Nml(2))
                , Var('x) ) ) )
 
