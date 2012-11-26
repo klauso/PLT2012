@@ -132,9 +132,15 @@ def cps2exp(c: CPSCont) = App(uncps(c), Fun('x, 'x))
  * Why is the argument type `CPSCont` instead of `CPSVal`?
  */
 
-def evalCPS(c: CPSCont) = eval( cps2exp(c) )
+def starteval(c: CPSCont) = eval( cps2exp(c) )
 
 def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
 
 val test1 = App( Fun('x,Add('x,5)), 7)
 val test2 = wth('x, 5, App(Fun('f, App('f,3)), Fun('y,Add('x,'y))))
+
+// The nonterminating redex
+val omega = App( Fun('x, App('x, 'x)),
+                 Fun('x, App('x, 'x)) )
+
+

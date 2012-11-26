@@ -27,17 +27,21 @@ automatic transformation of FAE-terms into continuation-passing-style,
 without an evaluator for the resulting code. Please write an eval-
 function for `CPSVal`.
 
+
 Hints
 
 1. If in doubt of the meaning of a CPS-expression, consult the
    additional material `F-cps-semantics.scala`.
 
-2. Tail-call optimisation is encouraged.
+2. Tail-call optimisation is encouraged. Tail-call optimisation that
+   does not depend on Scala's tail-recursion optimisation would be
+   best.
 
-3. Test cases for tail-call optimisation is entirely optional, for it
-   requires some way to write nontrivial recursive functions in FAE,
-   which means extending the syntax of FAE and the CPS-transformation
-   itself.
+
+Historical reading on expressivity and optimisation of tail-calls
+
+   http://repository.readscheme.org/ftp/papers/ai-lab-pubs/AIM-443.pdf
+
 */
 
 sealed abstract class Exp
@@ -110,11 +114,11 @@ case class NumV(n: Int) extends Value
 case class ClosureV(f: Fun, env: Env) extends Value
 
 
-// The `eval` function should be able to compute the value of
+// The `starteval` function should be able to compute the value of
 // CPS-transformed FAE terms directly. What should be its argument
 // type?
 
-// def eval( ... ) : Value = ...
+// def starteval( ... ) : Value = ...
 
 
 // Simple test cases. Uncomment to run.
@@ -124,5 +128,5 @@ def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
 val test1 = App( Fun('x,Add('x,5)), 7)
 val test2 = wth('x, 5, App(Fun('f, App('f,3)), Fun('y,Add('x,'y))))
 
-// assert(eval( cps(test1) ) == NumV(12))
-// assert(eval( cps(test2) ) == NumV(8))
+// assert(starteval( cps(test1) ) == NumV(12))
+// assert(starteval( cps(test2) ) == NumV(8))
