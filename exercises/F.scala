@@ -27,6 +27,7 @@ automatic transformation of FAE-terms into continuation-passing-style,
 without an evaluator for the resulting code. Please write an eval-
 function for `CPSVal`.
 
+
 Hints
 
 1. If in doubt of the meaning of a CPS-expression, consult the
@@ -35,6 +36,12 @@ Hints
 2. Tail-call optimisation is encouraged. Tail-call optimisation that
    does not depend on Scala's tail-recursion optimisation would be
    best.
+
+
+Historical reading on expressivity and optimisation of tail-calls
+
+   http://repository.readscheme.org/ftp/papers/ai-lab-pubs/AIM-443.pdf
+
 */
 
 sealed abstract class Exp
