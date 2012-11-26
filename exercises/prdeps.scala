@@ -1,17 +1,17 @@
 /* 
- * The Power and Responsibility of Direct-Environment-Passing Style
+ * The Power and Limit of Direct-Environment-Passing Style
  *
  * Author: Yi Dai
- * Date: 2012-11-18
+ * Date: 2012-11-25
  */
 
 sealed abstract class Imp
 case class Nml(num : Int) extends Imp
-case class Smb(nom : Symbol) extends Imp
+case class Var(nom : Symbol) extends Imp
 case class Pls(lhs : Imp, rhs : Imp) extends Imp
 case class If0(cnd : Imp, csq : Imp, alt : Imp) extends Imp
 case class Lam(prm : Symbol, bod : Imp) extends Imp
-case class Cmb(opr : Imp, opd : Imp) extends Imp
+case class Rdx(opr : Imp, opd : Imp) extends Imp
 case class Seq(zth : Imp, fst : Imp) extends Imp
 case class Set(nom : Symbol, dfn : Imp) extends Imp
 
@@ -19,7 +19,7 @@ type Env = List[(Symbol, Imp)]
 
 case class Clo(env : Env, prm : Symbol, bod : Imp) extends Imp
 
-def Let(nom : Symbol, dfn : Imp, bod : Imp) : Imp = Cmb(Lam(nom, bod), dfn)
+def Let(nom : Symbol, dfn : Imp, bod : Imp) : Imp = Rdx(Lam(nom, bod), dfn)
 
 def isNormal(imp : Imp) : Boolean = imp match {
   case Nml(_) => true
@@ -48,7 +48,7 @@ def update[A, B](a : A, b : B, al : List[(A, B)]) : List[(A, B)] = {
 def norm(imp : Imp, env : Env) : (Imp, Env) = imp match {
   case Nml(_) => (imp, env)
   case Clo(_, _, _) => (imp, env)
-  case Smb(nom) => (lookup(nom, env), env)
+  case Var(nom) => (lookup(nom, env), env)
   case Pls(lhs, rhs)=> {
     val (nf0, env0) = norm(lhs, env)
     nf0 match {
@@ -71,16 +71,13 @@ def norm(imp : Imp, env : Env) : (Imp, Env) = imp match {
     }
   }
   case Lam(prm, bod) => (Clo(env, prm, bod), env)
-  case Cmb(opr, opd) => {
+  case Rdx(opr, opd) => {
     val (nf0, env0) = norm(opr, env)
     nf0 match {
       case Clo(cenv, prm, bod) => {
         val (nf1, env1) = norm(opd, env0)
         val (nf, lenv) = norm(bod, (prm, nf1) :: cenv)
-        (nf, opr match {
-               case Smb(nom) => update(nom, Clo(lenv.tail, prm, bod), env1)
-               case _ => env1
-             } )
+        (nf, env1)
       }
       case _ => sys.error("not a function designator: " + opr)
     }
@@ -97,6 +94,8 @@ def norm(imp : Imp, env : Env) : (Imp, Env) = imp match {
 
 def emEnv : Env = List()
 
+/* Power */
+
 /*
  * (let ((x 1))
  *   (+ (let ((x 2)) x)
@@ -105,8 +104,8 @@ def emEnv : Env = List()
 
 def test0 : Imp =
   Let( 'x, Nml(1)
-     , Pls( Let('x, Nml(2), Smb('x)) 
-          , Smb('x) ) )
+     , Pls( Let('x, Nml(2), Var('x)) 
+          , Var('x) ) )
 
 /*
  * (let ((x 1))
@@ -117,32 +116,27 @@ def test0 : Imp =
 
 def test1 : Imp =
   Let( 'x, Nml(1)
-     , Let( 'f, Lam('y, Pls(Smb('x), Smb('y)))
+     , Let( 'f, Lam('y, Pls(Var('x), Var('y)))
           , Seq( Set('x, Nml(2))
-               , Cmb(Smb('f), Nml(3)) ) ) )
+               , Rdx(Var('f), Nml(3)) ) ) )
+
+/* Limit */
 
 /*
- * (let ((counter (lambda (y)
- *                  (let ((z y))
- *                    (lambda (s)
- *                      (if (= s 0)
- *                          z
- *                          (begin (set! z (+ z s))
- *                                 z ) ) ) ) ) ) )
- *    (let ((count (counter 0)))
- *      (count 1)
- *      (count 2) ) )
+ * (let ((count (let ((counter 0))
+ *                (lambda (s)
+ *                  (begin (set! counter (+ counter s))
+ *                         counter ) ) ) ) )
+ *   (begin (count 1)
+ *          (count 2) ) )
  */
 
 def test2 : Imp =
-  Let( 'counter, Lam('y, Let( 'z, Smb('y)
-                            , Lam('s, If0( Smb('s)
-                                         , Smb('z)
-                                         , Seq( Set('z, Pls(Smb('z), Smb('s)))
-                                              , Smb('z) ) ) ) ) )
-     , Let( 'count, Cmb(Smb('counter), Nml(0))
-          , Seq( Cmb(Smb('count), Nml(1))
-               , Cmb(Smb('count), Nml(2)) ) ) )
+  Let( 'count, Let( 'counter, Nml(0)
+                  , Lam('s, Seq( Set('counter, Pls(Var('counter), Var('s)))
+                               , Var('counter) ) ) )
+     , Seq( Rdx(Var('count), Nml(1))
+          , Rdx(Var('count), Nml(2)) ) )
 
 /*
  * (let ((x 1))
@@ -154,7 +148,7 @@ def test2 : Imp =
 
 def test3 : Imp =
   Let( 'x, Nml(1)
-     , Let( 'f, Lam('y, Set('x, Pls(Smb('x), Smb('y))))
-          , Seq( Cmb(Smb('f), Nml(2))
-               , Smb('x) ) ) )
+     , Let( 'f, Lam('y, Set('x, Pls(Var('x), Var('y))))
+          , Seq( Rdx(Var('f), Nml(2))
+               , Var('x) ) ) )
 
