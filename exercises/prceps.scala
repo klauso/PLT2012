@@ -93,8 +93,8 @@ def norm(imp : Imp, env : Env, cnt : Cnt) : (Imp, Env) = imp match {
         , (nf, env0) => cnt(nf, update(nom, nf, env0)) )
 }
 
-def emEnv : Env = List()
-def idCnt : Cnt = (x, y) => (x, y)
+val emEnv : Env = List()
+val idCnt : Cnt = (x, y) => (x, y)
 
 /* Power */
 

@@ -92,7 +92,7 @@ def norm(imp : Imp, env : Env) : (Imp, Env) = imp match {
   }
 }
 
-def emEnv : Env = List()
+val emEnv : Env = List()
 
 /* Power */
 
