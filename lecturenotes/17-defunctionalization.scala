@@ -12,7 +12,8 @@
 * be submitted as a "pull request". You can of course also send an email to Klaus Ostermann
  */
 
-/* In the discussion of syntactic interpretation vs meta interpretation we have learned that
+/**
+ * In the discussion of syntactic interpretation vs meta interpretation we have learned that
  * we only learn something about (and control) a language feature if we choose syntactic
  * interpretation.
  *
@@ -61,7 +62,7 @@ object CPSTransformed {
   }
 }
 
-/*
+/**
  * However, the CPS-transformed interpreter still uses high-level features of the meta-language,
  * most notably first-class functions. We will now introduce two transformations that can be
  * used to transform a function using higher-order functions into one using only first-order functions.
@@ -94,7 +95,8 @@ def map(f : Int => Int, xs : List[Int]) : List[Int] = xs match {
 
 def addAndMultNToList(n : Int, xs : List[Int]) = map(y => y * n, map(y => y + n, xs)) 
 
-/* We create two new top-level functions. Let's call them `f' and `g' 
+/**
+ * We create two new top-level functions. Let's call them `f' and `g' 
  * Their bodies are respectively `y => y + n' and `y => y * n'. We add a parameter for
  * each free variable. In the example, the free variable is `n' in both cases:
  */
@@ -111,7 +113,7 @@ def g(n : Int)(y : Int) = y * n
 
 def addAndMultNToList(n : Int, xs : List[Int]) = map(g(n), map(f(n), xs)) 
 
-/*
+/**
  * Let's now perform the same technique to the CPS-transformed interpreter given above.
  * It contains local functions in four places: two in the `Add' branch and two in the
  * `App' branch. We call the corresponding top-level functions, from left to right,
@@ -147,7 +149,8 @@ object LambdaLifted {
   }
 }
 
-/* The lambda-lifted interpreter contains no local functions anymore, but it still contains higher-order functions,
+/**
+ * The lambda-lifted interpreter contains no local functions anymore, but it still contains higher-order functions,
  * since `addc1' etc. return functions that are passed as parameters to other functions.
  *
  * _Defunctionalization_ is a program transformation technique that turns higher-order programs that have already
@@ -215,4 +218,3 @@ object Defunctionalized {
   }
 }
 
-/* This evaluator is an abstract machine in the following sense: TODO */
