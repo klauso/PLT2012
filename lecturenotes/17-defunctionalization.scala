@@ -67,10 +67,16 @@ object CPSTransformed {
 /*
  * However, the CPS-transformed interpreter still uses high-level features of
  * the meta-language, most notably first-class functions. We will now
- * introduce two transformations that can be used to transform a function
- * using higher-order functions into one using only first-order functions.
- * These techniques are generally useful program transformation techniques;
- * their scopes is not restricted to interpreters. 
+ * introduce one transformation that can be used to transform a function using
+ * higher-order functions into one using only first-order functions.  It is
+ * general program transformation technique, not restricted only to
+ * interpreters.
+ */
+
+
+/***********************
+ * Extra material starts
+ ***********************
  *
  * The first of these techniques is _lambda lifting_, also known as _closure
  * conversion_.  The goal of lambda lifting is to turn local functions into
@@ -164,6 +170,12 @@ object LambdaLifted {
  * still contains higher-order functions, since `addc1' etc. return functions
  * that are passed as parameters to other functions.
  *
+ *********************
+ * Extra material ends
+ *********************/
+
+
+/*
  * _Defunctionalization_ is a program transformation technique that turns
  * higher-order programs that have already been lambda-lifted into first-order
  * programs that contain no higher-order functions anymore. 
@@ -203,7 +215,7 @@ def map(f : FunctionValue, xs : List[Int]) : List[Int] = xs match {
 
 def addAndMultNToList(n : Int, xs : List[Int]) = map(G(n), map(F(n), xs))
  
-/* Let's now apply defunctionalization to our lambda-lifted interpreter: */
+/* Let's now apply defunctionalization to our CPS-transformed interpreter: */
  
 object Defunctionalized {
   sealed abstract class FunctionValue[T]
