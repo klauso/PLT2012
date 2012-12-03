@@ -48,6 +48,8 @@ object HOF2 {
 
 /* CPS Transformation */
 
+/* Call-by-Name */
+
 object CbNCPS1 {
   sealed abstract class Imp
 
@@ -138,6 +140,8 @@ object CbNCPS3 {
   def intp(exp : Exp) : Val = eval(exp, Nil, vlu => vlu)
 }
 
+/* Call-by-Value */
+
 object CbVCPS1 {
   sealed abstract class Imp
 
@@ -192,7 +196,7 @@ object CbVCPS2 {
 
 /* Defunctionalization */
 
-/* Direct */
+/* Single stage */
 
 object CbNCPS_DF1 {
   sealed abstract class Imp
@@ -237,9 +241,9 @@ object CbNCPS_DF1 {
 }
 
 /*
- * Two steps:
+ * Two stages:
  *
- * 1. Converting to closures
+ * 1. Closure conversion
  */
 
 object CC_CbNCPS3 {
@@ -273,7 +277,7 @@ object CC_CbNCPS3 {
   def intp(exp : Exp) : Val = eval(exp, Nil, vlu => vlu)
 }
 
-/* 2. Defunctionalizing continuation */
+/* 2. Defunctionalizing promise and continuation */
 
 object CC_CbNCPS_DF3 {
   sealed abstract class Exp
@@ -308,6 +312,41 @@ object CC_CbNCPS_DF3 {
   def eval(exp : Exp, env : Env, ctn : Ctn) : Val = exp match {
     case Var(ind) => apPm(env(ind), ctn)
     case Abs(bod) => cont(ctn, Clo(bod, env))
+    case App(opr, opd) => eval(opr, env, ApC(opd, env, ctn))
+  }
+
+  def intp(exp : Exp) : Val = eval(exp, Nil, IdC())
+}
+
+/* Inlining */
+
+object CC_CbNCPS_DF3 {
+  sealed abstract class Exp
+  sealed abstract class Val
+  sealed abstract class Prm
+  sealed abstract class Ctn
+
+  case class Var(ind : Int) extends Exp
+  case class Abs(bod : Exp) extends Exp
+  case class App(opr : Exp, opd : Exp) extends Exp
+
+  type Env = List[Prm]
+
+  case class Clo(bod : Exp, env : Env) extends Val
+
+  case class Thk(opd : Exp, env : Env) extends Prm
+
+  case class IdC() extends Ctn
+  case class ApC(opd : Exp, env : Env, ctn : Ctn) extends Ctn
+
+  def eval(exp : Exp, env : Env, ctn : Ctn) : Val = exp match {
+    case Var(ind) => env(ind) match {
+      case Thk(opd, env) => eval(opd, env, ctn)
+    }
+    case Abs(bod) => ctn match {
+      case IdC() => Clo(bod, env)
+      case ApC(opd, den, ctn) => eval(bod, Thk(opd, den) :: env, ctn)
+    }
     case App(opr, opd) => eval(opr, env, ApC(opd, env, ctn))
   }
 
