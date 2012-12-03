@@ -1,6 +1,6 @@
 Programming Languages and Types
 
-Exercise session F on 26.11.2012
+Exercise session G on 03.12.2012
 
 Hand in
 
