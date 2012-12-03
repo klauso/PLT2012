@@ -51,7 +51,7 @@ b.  Lambda-lift the following program:
 
 c.  Defunctionalise the resulting program.
 
-d.  Repeat steps 2--4 for the following use of fold.
+d.  Repeat steps b and c for the following use of fold.
 
     fold((f: Int => Int, g: Int => Int) => (z: Int) => f(g(z)),
          (z: Int) => z,
