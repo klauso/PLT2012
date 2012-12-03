@@ -8,6 +8,14 @@ Hand in
 - as a single .scala or .pdf file to pllecture@informatic, or
 - in paper form during lectures or exercise sessions.
 
+Solution will be posted before 10.12.12, 1000 hrs.
+
+The tutor shall give feedback to each submission, without giving
+points. Homework does not count toward course requirement. Do them for
+your own benefit.
+
+While everyone should write their own solution, it is recommended to
+work face-to-face in small groups.
 
 
 I. First-class continuations
