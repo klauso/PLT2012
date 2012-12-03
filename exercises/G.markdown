@@ -5,7 +5,7 @@ Exercise session G on 03.12.2012
 Hand in
 
 - anytime
-- as a single .scala or .pdf file to pllecture@informatic, or
+- as a single .scala or .pdf file to pllecture@informatik, or
 - in paper form during lectures or exercise sessions.
 
 Solution will be posted before 10.12.12, 1000 hrs.
