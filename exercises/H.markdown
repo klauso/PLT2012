@@ -38,3 +38,18 @@ b. Prove that the identity monad, the Maybe monad, and the Reader
 
 c. Why do you think should monads obey these laws?
 
+
+II. Monads in action
+====================
+
+The following problems may be solved in Haskell or Scala.
+The files `H-mwae.hs` and `H-mwae.scala` may help you get started.
+
+1. Design your own monad for fail-safe integers with a special value
+`NaN` (not a number). Implement suitable bind- and return-functions.
+A computation involving `NaN` should always return `NaN`. Division
+by zero should also yield `NaN`.
+
+2. Extend WAE with division operations. Modify the monad-based
+interpreter in `H-mwae.hs` or `H-mwae.scala` to use fail-safe
+integers.
