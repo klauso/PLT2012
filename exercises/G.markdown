@@ -44,7 +44,7 @@ b.  Lambda-lift the following program:
     def fold[A,B](f: (A, B) => A, e: A, l: List[B]): A = 
       l match {
         case Nil => e
-        case x :: xs => fold(f, f((e, x)), xs)
+        case x :: xs => fold(f, f(e, x), xs)
       }
     
     fold((x, y) => (x + y) / 2, 1, List(1, 2, 3, 4, 5))
