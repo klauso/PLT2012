@@ -21,9 +21,9 @@ work face-to-face in small groups.
 I. Monadic laws
 ===============
 
-To qualify as a monad, one does not only need a type constructor and a
-bind/return implementation of the correct type. In addition, monads must
-respect the following three algebraic laws:
+To qualify as a monad, one needs more than a type constructor and a
+bind/return implementation of the correct type. In addition, monads
+must respect the following three algebraic laws:
 
 1. `(bind (return x) f)  == (f x)`
 2. `(bind m return) == m`
@@ -31,8 +31,10 @@ respect the following three algebraic laws:
 
 Solve the following tasks.
 
-1. Rephrase the laws in terms of do-notation. 
-2. Prove that the identity monad, the Maybe monad, and the Reader
-   monad satisfy these laws. 
-3. Why do you think should monads obey these laws?
+a. Rephrase the laws in terms of do-notation.
+
+b. Prove that the identity monad, the Maybe monad, and the Reader
+   monad satisfy these laws.
+
+c. Why do you think should monads obey these laws?
 
