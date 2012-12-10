@@ -113,3 +113,18 @@ object Test {
 
   val test = norm(Example.term)
 }
+
+/* SUMMARY
+ * =======
+ *
+ * We implemented an interpreter where syntax and semantics
+ * is strictly separated. Most of the hard work is in the
+ * semantics, in functions like app and add. Evaluation is
+ * very simple: We just map the syntactic structure to the
+ * semantic structure. We also defined reification, the
+ * inverse of evaluation. This required two tricks: (1) We
+ * enhanced the semantics with support for symbolic computation,
+ * effectively adding a copy of all Exp constructors to the
+ * Value type. (2) In the case for the reifications of
+ * functions, we apply the function to a fresh identifier.
+ */
