@@ -27,7 +27,7 @@ must respect the following three algebraic laws:
 
 1. `(bind (return x) f)  == (f x)`
 2. `(bind m return) == m`
-3. `(bind (bind m f) g) == (bind m (lambda (x) (bind (f x) g)))`
+3. `(bind (bind m f) g) == (bind m ( x => (bind (f x) g)) )`
 
 Solve the following tasks.
 
