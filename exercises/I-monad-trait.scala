@@ -85,7 +85,7 @@ def askR[A] = Reader[A, A](identity)
 
 
 // Useful for changing the environment in a subcomputation,
-// but extremely awkward when used in conjunction together with
+// but extremely awkward when used together with
 // for-comprehension. We don't make use if it any more.
 //
 // def localR[R, S, A](f: R => S, m: Reader[S, A]) : Reader[R, A] =
