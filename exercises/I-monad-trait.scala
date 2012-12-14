@@ -1,60 +1,23 @@
 // Monad trait
-// Written by Cai Yufei
-// According to ideas of Jonathan Brachthaeuser
 
-trait Monad[A] {
+// TODO
+//
+// mReturn and mBind doesn't know to look for implicit monad
+// based on return type. May we copy CanBuildFrom[Repr, B, That]?
 
-  // The Type
-  // ========
-  //
-  // A variant of the following line must be repeated in every class 
-  // implementing the Monad interface. It gives a name `M` to each
-  // class implementing the Monad trait. The name is useful in various
-  // places, not the least in ensuring that the particular monad does
-  // not change during a bind operation, even though the content may.
+trait Monad[ M[_] ] {
+  def mReturn[A](a: A) : M[A]
+  def mBind[A, B](m: M[A], f: A => M[B]) : M[B]
+}
 
-  type M[A] <: Monad[A]
-
-  // If MyMonad[A] extends Monad[A], it should declare instead:
-  //
-  // type M[A] = MyMonad[A]
-
-
-  // Return
-  // ======
-  //
-  // We force subclasses to implement a `return` method
-  // inside a singleton object.
-
-  def _return[B](a: B) : M[B]
-
-  // The problem is, an instance of a particular monad class
-  // is needed to invoke `_return`. For better user-friendliness,
-  // subclasses should implement `_return` via a constructor,
-  // which can be invoked outside the class definition without
-  // any "template" instance:
-  //
-  // def _return[B](a: B) : M[B] = new MyMonad(a)
-  // def this(a: A) = this( /* implementation of `return` */ )
-
-
-  // Bind
-  // ====
-  //
-  // Let us rename `bind` to `flatMap` in order to take advantage of
-  // Scala's do-notation, called "for-comprehension".
-
-  def flatMap[B](f: A => M[B]) : M[B]
-
-
-  // Unimportant
-  // ===========
-  //
-  // `map` method is here to make Scala's do-notation, called
-  // "for-comprehension", work. Subclasses should ignore it.
-
-  final def map[B](f: A => B) : M[B] = flatMap(x => _return( f(x) ))
-
+implicit def mReturn[M[_], A](a: A)(implicit p: Monad[M])
+: M[A] = p.mReturn(a)
+implicit def mBind[M[_], A, B](m: M[A], f: A => M[B])(implicit p: Monad[M])
+: M[B] = p.mBind(m, f)
+implicit def comprehensionSyntax[M[_], A](m: M[A])(implicit p: Monad[M])
+= new {
+  def flatMap[B](f: A => M[B]) : M[B] = mBind(m, f)
+  def map[B](f: A => B) : M[B] = flatMap(x => mReturn(f(x)))
 }
 
 
@@ -65,18 +28,37 @@ trait Monad[A] {
 // `Map[Symbol, Int]`, `A` is the value type `Int`, and `runReader` 
 // computes a value from an initial environment.
 
-case class Reader[R, A](runReader: R => A) extends Monad[A] {
+case class Reader[R, A](runReader: R => A) {
 
   type M[A] = Reader[R, A]
 
-  def this(a: A) = this(_ => a)
-  def _return[B](a: B) : M[B] = new Reader(a)
-
-  def flatMap[B](f: A => Reader[R, B]) = Reader[R, B](
-    r => f(this runReader r) runReader r
-  )
+  implicit object ReaderMonad extends Monad[M] {
+    def mReturn[A](a: A) = Reader(_ => a)
+    def mBind[A, B](m: Reader[R, A], f: A => Reader[R, B]) = Reader[R, B](
+      r => f(m runReader r) runReader r
+    )
+  }
 
 }
+
+implicit def nastyHack[R, A] = new Reader[R,A](_ => sys error ">_<").ReaderMonad
+
+
+// A second example: transliteration of Haskell's Maybe monad
+
+sealed abstract class Maybe[A]
+
+case class Just[A](a: A) extends Maybe[A]
+case class Nothing[A]() extends Maybe[A]
+
+implicit object MaybeMonad extends Monad[Maybe] {
+  def mReturn[A](a: A) : Maybe[A] = Just(a)
+  def mBind[A, B](m: Maybe[A], f: A => Maybe[B]) : Maybe[B] = m match {
+    case Nothing() => Nothing()
+    case Just(a) => f(a)
+  }
+}
+
 
 
 // Useful for getting the current environment.
@@ -90,6 +72,7 @@ def askR[A] = Reader[A, A](identity)
 //
 // def localR[R, S, A](f: R => S, m: Reader[S, A]) : Reader[R, A] =
 //  Reader[R,A](r => m runReader f(r))
+
 
 // Environment-based WAE interpreter using the Reader monad
 
@@ -107,30 +90,38 @@ type Env = Map[Symbol, Int]
 // What `eval` computes is an instance of the monad Reader[Env, Int].
 // It has one field, `runReader`, whose meaning should be clear from
 // its type `Env => Int`.
+//
+// I hate EnvReader.
 
-def eval(e: Exp) : Reader[Env, Int] = e match {
+type EnvReader[A] = Reader[Env, A]
 
-  case Num(n) => new Reader(n)
+def eval(e: Exp)
+(implicit monad: Monad[EnvReader])
+: EnvReader[Int] = {
+  e match {
 
-  case Add(lhs, rhs) => for {
-    v1 <- eval(lhs)
-    v2 <- eval(rhs)
-  } yield (v1 + v2)
+    // mReturn is good if
+    case Num(n) => mReturn(n)
 
-  case Mul(lhs, rhs) => for {
-    v1 <- eval(lhs)
-    v2 <- eval(rhs)
-  } yield (v1 * v2)
+    case Add(lhs, rhs) => for {
+      v1 <- eval(lhs)
+      v2 <- eval(rhs)
+    } yield (v1 + v2)
 
-  case Id(x) => for {
-    env <- askR
-  } yield env(x)
+    case Mul(lhs, rhs) => for {
+      v1 <- eval(lhs)
+      v2 <- eval(rhs)
+    } yield (v1 * v2)
 
-  case With(x, xdef, body) => for {
-    env <- askR
-    xv  <- eval(xdef)
-  } yield eval(body) runReader (env + (x -> xv))
+    case Id(x) => for {
+      env <- askR : EnvReader[Env]
+    } yield env(x)
 
+    case With(x, xdef, body) => for {
+      env <- askR : EnvReader[Env]
+      xv  <- eval(xdef)
+    } yield eval(body) runReader (env + (x -> xv))
+  }
 }
 
 // Tests from notes on WAE.
@@ -145,24 +136,3 @@ assert(runTest(test1) == 10)
 assert(runTest(test2) == 15)
 assert(runTest(test3) ==  8) 
 assert(runTest(test4) == 10)
-
-
-// A second example: transliteration of Haskell's Maybe monad
-
-object Maybe{
-
-  sealed abstract class Maybe[A] extends Monad[A] {
-    type M[A] = Maybe[A]
-
-    def _return[B](a: B) : M[B] = Just(a)
-
-    def flatMap[B](f: A => M[B]) : M[B] = this match {
-      case Nothing() => Nothing()
-      case Just(a)   => f(a)
-    }
-  }
-
-  case class Just[A](a: A) extends Maybe[A]
-  case class Nothing[A]() extends Maybe[A]
-
-}
