@@ -23,4 +23,25 @@ I. Modular Semantics
 Copy
 [20-normalization.scala]
 (https://github.com/klauso/PLT2012/blob/master/lecturenotes/20-normalization.scala).
+Observe the similarities between `object Evaluation` and `object Evaluation2`.
+Try to write one evaluator to do the jobs of both by abstracting
+over `Semantics` and `Semantics2`. The following interface is one possibility.
+
+    trait Semantics[Domain] { def ... }
+    
+    object Domain1 {
+      type Domain = Env => Value
+      type Env = Map[Symbol, Value]
+      abstract sealed class Value
+    }
+    
+    object Semantics1 extends Semantics[Domain1.Domain] {
+      import Domain1._
+      def ...
+    }
+
+If you did _not_ follow the above approach and
+ran into `error: illegal dependent method type`, try starting Scala-interpreter thus:
+
+    scala -Ydependent-method-types
 
