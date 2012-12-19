@@ -1,20 +1,20 @@
 /*
-* This is a guest lecture by Yi Dai for the course //Programming Languages and
-* Types// by Klaus Ostermann at the University of Marburg.
+* This is a substitute lecture by Yi Dai for the course //Programming
+* Languages and Types// by Klaus Ostermann at the University of Marburg.
 *
 * The material in this lecture is loosely based on the following two papers:
 *
 * * Mads Sig Ager, Dariusz Biernacki, Olivier Danvy, and Jan Midtgaard. A
-*   functional correspondence between evaluators and abstract machines. In Dale
-*   Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
+*   functional correspondence between evaluators and abstract machines. In
+*   Dale Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
 *   Conference on Principlesand Practice of Declarative Programming (PPDP'03),
 *   pages 8-19. ACM Press, August 2003.
 *
 * * Olivier Danvy. On evaluation contexts, continuations, and the rest of the
 *   computation. In Hayo Thielecke, editor, Proceedings of the Fourth ACM
-*   SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department of
-*   Computer Science, Queen Mary's College, pages 13-23, Venice, Italy, January
-*   2004. Invited talk.
+*   SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department
+*   of Computer Science, Queen Mary's College, pages 13-23, Venice, Italy,
+*   January 2004. Invited talk.
 */
 
 /* This lecture consists of two parts.  The first part goes from evaluators to
@@ -41,13 +41,13 @@
  * meta-level higher-order functions in the following two senses:
  *
  * # Object-level first-class functions are implemented by meta-level
- * first-class functions and object-level application is implemented by
- * meta-level function application.  Since object-level functions are
- * higher-order, meta-level functions implementing them must also be
- * higher-order.
+ *   first-class functions and object-level function application is
+ *   implemented by meta-level function application.  Since object-level
+ *   functions are higher-order, meta-level functions implementing them must
+ *   also be higher-order.
  *
  * # Since {{eval}} returns such meta-level functions as results, {{eval}} is
- * higher-order too.
+ *   higher-order too.
  */
 object HOF {
   sealed abstract class Exp
@@ -105,10 +105,10 @@ object HOF {
  * The consequences are twofold:
  *
  * # It eliminates the use of meta-level first-class functions to represent
- * object-level first-class functions.
+ *   object-level first-class functions.
  *
  * # It turns meta-level higher-order functions back to first-order,
- * particularly {{eval}}.
+ *   particularly {{eval}}.
  * 
  * Keeping from meta-level first-class functions but with meta-level
  * first-order functions opens more choices of meta-languages for
@@ -116,7 +116,7 @@ object HOF {
  * support first-class functions can be used.
  *
  * After closure conversion, we have an interpreter in ||direct style||, that
- * is, without manipulating explicit continuations.
+ * is, not manipulating explicit continuations.
  */
 object HOF_CC {
   sealed abstract class Exp
@@ -158,12 +158,12 @@ object HOF_CC {
  * The result of the transformation has the following features:
  *
  * # The evaluation order of the object-language is call-by-name.  It no
- * longer depends on the evaluation order of the meta-language.  Even if
- * someday Scala switches to call-by-name, our interpreter still correctly
- * implements the call-by-name lambda calculus.
+ *   longer depends on the evaluation order of the meta-language.  Even if
+ *   someday Scala switches to call-by-name, our interpreter still correctly
+ *   implements the call-by-name lambda calculus.
  *
  * # The whole interpreter is tail recursive and can readily be tail-call
- * optimized.
+ *   optimized.
  */
 object HOF_CC_CbNCPS {
   sealed abstract class Exp
