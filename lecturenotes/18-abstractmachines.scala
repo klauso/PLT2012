@@ -18,7 +18,7 @@
 */
 
 /* This lecture consists of two parts.  The first part goes from evaluators to
- * abstract machines.  The second parts goes the other way around.  In the
+ * abstract machines.  The second part goes the other way around.  In the
  * first part, our object-language is the call-by-name lambda calculus.  In
  * the second part, our object-language is the call-by-value lambda calculus.
  * For both parts, we use the ||de-Bruijn-index|| notation for lambda-terms.
@@ -200,17 +200,40 @@ object HOF_CC_CbNCPS {
 /* $$ Defunctionalization $$
  *
  * ||Defunctionalization|| is a general program transformation technique that
- * eliminates higher-order functions by replacing them with a first-order
- * "apply" function.
+ * eliminates higher-order functions, by replacing the creation of
+ * first-class functions with the construction of data structures and the
+ * application of first-class functions with the destruction of data
+ * structures.
  *
- * TODO: describe the three steps of defunctionalization
+ * A program that contains higher-order functions can be defunctionalized by
+ * following three steps:
  *
- * Closure conversion we have seen earlier is just a special form of
- * defunctionalization which we will cover later.  It is usually done before
- * transforming the interpreter into continuation-passing style to ease the
- * whole task.  Below is what we get by defunctionalizing the meta-level
- * first-class functions implementing object-level first-class functions.
- * Inlining {{apCl}} gives exactly the interpreter defined in {{HOF_CC}}.
+ * # Encoding --- Identify first-class functions in the program and classify
+ *   them according to their types.  For each function type, introduce a data
+ *   type.  For each function instance, introduce a data constructor.  Make
+ *   sure that each data constructor take arguments having the same types as
+ *   the free variables of the function instance.
+ *
+ * # Decoding --- For each encoding data type, define a function
+ *   (conventionally called "apply") that takes two arguments: one being of
+ *   the data type and the other being of the parameter of the function
+ *   instance.
+ *
+ * # Refactoring --- Go through the program.  When a function instance is met,
+ *   construct an encoding data from the free variables of the function
+ *   instance using the correponding data constructor.  Locate all the places
+ *   where this function instance is applied, replacing the its application
+ *   with an explict call of the "apply" function on (the designator of) the
+ *   function instance and its argument.
+ *
+ * TODO: a small example?
+ *
+ * Closure conversion can be seen as a special form of defunctionalization
+ * which we will cover later.  It is usually done before transforming the
+ * interpreter into continuation-passing style to ease the whole task.  Below
+ * is what we get by defunctionalizing the meta-level first-class functions
+ * implementing object-level first-class functions.  Inlining {{apCl}} gives
+ * exactly the interpreter defined in {{HOF_CC}}.
  */
 object HOF_DFP {
   sealed abstract class Exp
