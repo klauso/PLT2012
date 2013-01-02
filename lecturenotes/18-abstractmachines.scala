@@ -205,35 +205,119 @@ object HOF_CC_CbNCPS {
  * application of first-class functions with the destruction of data
  * structures.
  *
- * A program that contains higher-order functions can be defunctionalized by
+ * A program that contains higher-order functions can be defunctionalized 
  * following three steps:
  *
  * # Encoding --- Identify first-class functions in the program and classify
- *   them according to their types.  For each function type, introduce a data
- *   type.  For each function instance, introduce a data constructor.  Make
- *   sure that each data constructor take arguments having the same types as
- *   the free variables of the function instance.
+ *   them according to their types.  For each function type, introduce an
+ *   encoding data type.  For each function instance (i.e., function of the
+ *   encoded function type) introduce a constructor that will construct data
+ *   of the encoding type.  Make sure that each data constructor takes
+ *   arguments that have the same types as the free variables of the function
+ *   instance.  The idea is that each constructor should save the values bound
+ *   to the free variables of the function instance.  Encoding should not
+ *   cause any informatoin loss.
  *
  * # Decoding --- For each encoding data type, define a function
- *   (conventionally called "apply") that takes two arguments: one being of
- *   the data type and the other being of the parameter of the function
- *   instance.
+ *   (conventionally called "apply") that takes one argument of the data type
+ *   and the other of the argument type of the encoded function type.  This
+ *   "apply" function will use pattern matching to do case analysis on its
+ *   first argument in order to extract the saved values bound to the free
+ *   variables of the encoded function instance.  The right-hand side of each
+ *   case will be the body of the encoded function instance, with variables
+ *   renamed accordingly.
  *
- * # Refactoring --- Go through the program.  When a function instance is met,
- *   construct an encoding data from the free variables of the function
- *   instance using the correponding data constructor.  Locate all the places
- *   where this function instance is applied, replacing the its application
- *   with an explict call of the "apply" function on (the designator of) the
- *   function instance and its argument.
+ * # Refactoring --- Go through the program.  When an encoded function type is
+ *   met, replace it with its encoding data type.  When a function instance is
+ *   met, encode it by constructing data from its free variables using the
+ *   corresponding constructor.  In this way, values bound to the free
+ *   variables of the function instance are saved.  Locate all the places
+ *   where a function instance is applied, replacing its application with an
+ *   explict call of the "apply" function on (the designator of) the function
+ *   instance and its argument.
  *
- * TODO: a small example?
+ * We illustrate how to defunctionalize a higher-order program following these
+ * two steps by an example.  Below is a simple higher-order program that
+ * defines a function that will first add {{n}} to and then multiply by {{n}}
+ * every integer in a list {{xs}}.
+ */
+
+def map(f : Int => Int, xs : List[Int]) : List[Int] = xs match {
+  case Nil => Nil
+  case x :: xs => f(x) :: map(f, xs)
+}
+
+def addMulInts(n : Int, xs : List[Int]) : List[Int] =
+  map(x => x * n, map(x => x + n, xs))
+
+/* Let us apply the three-step procedure to this program.
  *
- * Closure conversion can be seen as a special form of defunctionalization
- * which we will cover later.  It is usually done before transforming the
+ * # Encoding
+ *
+ *   There are two first-class functions in the program, namely {{x = > x *
+ *   n}} and {{x => x + n}}.  Both are instances of the type {{Int => Int}}r.
+ *   Therefore we only need to introduce one data type, call it {{IntF}}.
+ *   Both functions also have {{n}} of type {{Int}} as their free variables.
+ *   So we introduce two data constructors, call them {{AddN}} and {{MulN}}
+ *   respectively.  Each takes an argument {{n}} of type {{Int}}.
+ */
+sealed abstract class IntF
+case class AddN(n : Int) extends IntF
+case class MulN(n : Int) extends IntF
+
+/* # Decoding
+ *
+ *   Next we define the "apply" function which takes one argument of type
+ *   {{IntF}} and the other argument of the argument type of the encoded
+ *   function type {{Int => Int}}, that is, {{Int}}.  The "apply" function
+ *   will distinguish two cases, {{MulN(n)}} or {{AddN(n)}}, and respectively
+ *   add {{n}} to or multiply by {{n}} its second argument.  Note that we use
+ *   the same names ("x" and "n" respectively) for the second parameter and
+ *   the pattern variable of each case in {{apply}}, as those for the
+ *   parameter and free variable in each encoded function instance, so that we
+ *   are not concerned with variable renaming and can put the body of the
+ *   encoded function instance as is directly to the right-hand side of each
+ *   case.  But normally, renaming variables in the body of the encoded
+ *   function instance is required, for instance, if the second function
+ *   instance in our example program is {{y => y * n}} instead of {{x => x *
+ *   n}}.
+ */
+def apply(f : IntF, x : Int) : Int = f match {
+  case MulN(n) => x * n
+  case AddN(n) => x + n
+}
+
+/* # Refactoring
+ *
+ *   Now we are ready to actually defunctionalize the original higher-order
+ *   program.  First, we replace the function type {{Int => Int}} of the
+ *   parameter {{f}} of {{map}} with our encoding data type {{IntF}}.  Second,
+ *   we replace the two function instances {{x => x * n}} and {{x => x + n}}
+ *   in the body of {{AddMulInts}} by {{MulN(n)}} and {{AddN(n)}}
+ *   respectively.  Note that both functions will be bound to {{f}} and passed
+ *   in to {{map}}.  In other words, where {{f}} is applied in {{map}} is
+ *   where these function instances are applied.  Thus the third is to replace
+ *   the application of {{f}} to {{x}} with an explicit invocation of
+ *   {{apply}} on {{f}} and {{x}}.
+ */
+def map(f : IntF, xs : List[Int]) : List[Int] = xs match {
+  case Nil => Nil
+  case x :: xs => apply(f, x) :: map(f, xs)
+}
+
+def addMulInts(n : Int, xs : List[Int]) : List[Int] =
+  map(MulN(n), map(AddN(n), xs))
+ 
+/* Defunctionalization can also be applied to non-trivial higher-order
+ * programs, like interpreters.
+ * 
+ * Actually closure conversion can be seen as a special case of
+ * defunctionalization.  It is usually done before transforming the
  * interpreter into continuation-passing style to ease the whole task.  Below
- * is what we get by defunctionalizing the meta-level first-class functions
- * implementing object-level first-class functions.  Inlining {{apCl}} gives
- * exactly the interpreter defined in {{HOF_CC}}.
+ * is what we get by defunctionalizing meta-level first-class functions that
+ * implement object-level first-class functions.  {{apCl}} is the "apply"
+ * function.  It can be easily verified that inlining {{apCl}} gives exactly
+ * the interpreter defined in {{HOF_CC}}.
  */
 object HOF_DFP {
   sealed abstract class Exp
@@ -260,8 +344,32 @@ object HOF_DFP {
   def intp(exp : Exp) : Vlu = eval(exp, Nil)
 }
 
-/* $$$ Defunctionalizing Computation $$$ */
+/* Back to our original plan, since CPS-transformation reintroduced meta-level
+ * first-class functions and in turn higher-order functions as well into the
+ * closure-converted interpreter, we are going to apply defunctionalization to
+ * our CPS-transformed interpreter {{HOF_CC_CbNCPS}}.  
+ *
+ * There are two function types, namely {{Vlu => Vlu}} for continuation and
+ * {{Ctn => Vlu}} for delayed computation.  We will defunctionalize them
+ * separately.  We choose to first handle {{Ctn => Vlu}}.  The other way
+ * around works as well and is left as an exercise.
+ */
 
+/* $$$ Defunctionalizing Computation $$$
+ *
+ * For the function type {{Ctn => Vlu}}, we introduce an encoding data type
+ * {{Cpu}}, the name abbreviating computation.  There is only one instance of
+ * type {{Ctn => Vlu}}, that is, {{ctn => eval(opd, env, ctn)}}.  It contains
+ * two free variables, namely {{opd}} of type {{Exp}} and {{env}} of type
+ * {{Env}}.  Therefore we introduce one data constructor {{Thk}} that takes
+ * one argument of type {{Exp}} and the other of type {{Env}}, without loss of
+ * generality, named {{opd}} and {{env}} respectively.  The "apply" function,
+ * called {{apCp}} is readily defined.  During refactoring, the only function
+ * instance is replaced with {{Thk(opd, env)}}, and the application of the
+ * encoded function {{fun(ctn)}} is replaced with an explicit invocation of
+ * {{apCp}} on {{env(ind)}} which is supposed to be data encoding compuation
+ * and the continuation {{ctn}}.  The result is the following interpreter.
+ */
 object HOF_CC_CbNCPS_DFC {
   sealed abstract class Exp
   sealed abstract class Vlu
@@ -296,8 +404,10 @@ object HOF_CC_CbNCPS_DFC {
   def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$$$ Inlining $$$$ */
-
+/* $$$$ Inlining $$$$
+ *
+ * We can similarly inline {{apCp}}, which gives:
+ */
 object HOF_CC_CbNCPS_DFC_Inl {
   sealed abstract class Exp
   sealed abstract class Vlu
@@ -330,8 +440,23 @@ object HOF_CC_CbNCPS_DFC_Inl {
   def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$$ Defunctionalizing Continuation $$$ */
-
+/* $$$ Defunctionalizing Continuation $$$
+ *
+ * Next we defunctionalize the function type {{Vlu => Vlu}} for continuation.
+ * First, we introduce a new data type {{Ctn}}.  Second, we find that there
+ * are two instances of the function type: {{clo => clo match { ... }}} and
+ * {{vlu => vlu}}.  The former has three free variables: {{opd}} of type
+ * {{Exp}}, {{env}} of type {{Env}} and {{ctn}} of type {{Ctn}}.  The latter
+ * has no free variable.  Therefore we introduce two data constructors:
+ * {{ApC}} with two parameters {{opd}} of type {{Exp}} and {{env}} of type
+ * {{Env}}, {{IdC}} with no parameter.  The apply function, called {{apCt}} is
+ * again easily defined.  Third, we replace the two instances {{clo => clo
+ * match { ... }}} and {{vlu => vlu}} with {{ApC(opd, env, ctn)}} and
+ * {{IdC()}} respectively, the application of them {{ctn(Clo(bod, env)}} with
+ * an explicit invocation of {{apCt}} on {{ctn}} and {{Clo(bod, env)}}.  We
+ * obtain the following interpreter without meta-level first-class functions
+ * and higher-order functions.
+ */
 object HOF_CC_CbNCPS_DFC_Inl_DFC {
   sealed abstract class Exp
   sealed abstract class Vlu
@@ -348,14 +473,14 @@ object HOF_CC_CbNCPS_DFC_Inl_DFC {
 
   case class Thk(opd : Exp, den : Env) extends Cpu
 
-  case class IdC() extends Ctn
   case class ApC(opd : Exp, den : Env, ctn : Ctn) extends Ctn
+  case class IdC() extends Ctn
 
   def apCt(ctn : Ctn, vlu : Vlu) : Vlu = ctn match {
-    case IdC() => vlu
     case ApC(opd, den, ctn) => vlu match {
       case Clo(bod, sen) => eval(bod, Thk(opd, den) :: sen, ctn)
     }
+    case IdC() => vlu
   }
 
   def eval(exp : Exp, env : Env, ctn : Ctn) : Vlu = exp match {
@@ -372,8 +497,8 @@ object HOF_CC_CbNCPS_DFC_Inl_DFC {
 /* $$$$ Refactoring $$$$
  *
  * Unifying the data structure for closure and thunk, listifying the data
- * structure for continuation, and inlining {{apCt}} gives an implementation
- * of Krivine's machine.
+ * structure for continuation, and inlining {{apCt}} gives us an
+ * implementation of Krivine's machine.
  */
 object KAM {
   sealed abstract class Exp
