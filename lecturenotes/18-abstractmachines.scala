@@ -1,53 +1,53 @@
-/*
-* This is a substitute lecture by Yi Dai for the course //Programming
-* Languages and Types// by Klaus Ostermann at the University of Marburg.
-*
-* The material in this lecture is loosely based on the following two papers:
-*
-* * Mads Sig Ager, Dariusz Biernacki, Olivier Danvy, and Jan Midtgaard. A
-*   functional correspondence between evaluators and abstract machines. In
-*   Dale Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
-*   Conference on Principlesand Practice of Declarative Programming (PPDP'03),
-*   pages 8-19. ACM Press, August 2003.
-*
-* * Olivier Danvy. On evaluation contexts, continuations, and the rest of the
-*   computation. In Hayo Thielecke, editor, Proceedings of the Fourth ACM
-*   SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department
-*   of Computer Science, Queen Mary's College, pages 13-23, Venice, Italy,
-*   January 2004. Invited talk.
-*/
+/**
+ * (The Markup syntax used almost follows the Creole 1.0 Wiki standard except
+ * that "+" instead of "*" is chosen as bullet leading items in an unordered
+ * list.)
+ *
+ * This is a substitute lecture by Yi Dai for the course //Programming
+ * Languages and Types// by Klaus Ostermann at the University of Marburg.
+ *
+ * The material in this lecture is loosely based on the following two papers:
+ *
+ * + Mads Sig Ager, Dariusz Biernacki, Olivier Danvy, and Jan Midtgaard. A
+ * functional correspondence between evaluators and abstract machines. In Dale
+ * Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
+ * Conference on Principlesand Practice of Declarative Programming (PPDP'03),
+ * pages 8-19. ACM Press, August 2003.
+ *
+ * + Olivier Danvy. On evaluation contexts, continuations, and the rest of the
+ * computation. In Hayo Thielecke, editor, Proceedings of the Fourth ACM
+ * SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department of
+ * Computer Science, Queen Mary's College, pages 13-23, Venice, Italy, January
+ * 2004. Invited talk.
+ */
 
 /* This lecture consists of two parts.  The first part goes from evaluators to
  * abstract machines.  The second part goes the other way around.  In the
- * first part, our object-language is the call-by-name lambda calculus.  In
- * the second part, our object-language is the call-by-value lambda calculus.
- * For both parts, we use the ||de-Bruijn-index|| notation for lambda-terms.
- * (Please find more about de-Bruijn-index notation on Wikipedia.)  Our
- * meta-language is Scala as usual.
- */
-
-/* $ From Evaluators to Abstract Machines $
+ * first part, our object-language is the call-by-name lambda-calculus.  In
+ * the second part, our object-language is the call-by-value lambda-calculus.
+ * For both parts, we use the **de-Bruijn-index** notation for
+ * lambda-expressions.  (Please find more about de-Bruijn-index notation on
+ * Wikipedia.)  Our meta-language is Scala as usual.
+ *
+ * =From Evaluators to Abstract Machines=
  *
  * In this part, we will look at how to derive an abstract machine, called
- * Krivine's machine, for the call-by-name lambda calculus, from a standard
- * interpreter by a series of program transformations.  An ||abstract
- * machine|| is just like a machine, but has no instruction set.  Instead, it
- * directly operates on soure terms.
- */
-
-/* $$ Higher-Order Function $$
+ * Krivine's machine, for the call-by-name lambda-calculus, from a standard
+ * interpreter by a series of program transformations.
  *
- * This interpreter implements the call-by-name lambda calculus.  It features
+ * ==Higher-Order Function== 
+ *
+ * This interpreter implements the call-by-name lambda-calculus.  It features
  * meta-level higher-order functions in the following two senses:
  *
  * # Object-level first-class functions are implemented by meta-level
- *   first-class functions and object-level function application is
- *   implemented by meta-level function application.  Since object-level
- *   functions are higher-order, meta-level functions implementing them must
- *   also be higher-order.
+ * first-class functions and object-level function application is implemented
+ * by meta-level function application.  Since object-level functions are
+ * higher-order, meta-level functions implementing them must also be
+ * higher-order.
  *
  * # Since {{eval}} returns such meta-level functions as results, {{eval}} is
- *   higher-order too.
+ * higher-order too.
  */
 object HOF {
   sealed abstract class Exp
@@ -96,12 +96,11 @@ object HOF {
  *
  * But to make life a bit easier, let us first get rid of meta-level
  * first-class functions that implement object-level first-class functions.
- */
-
-/* $$ Closure Conversion $$
  *
- * ||Closure conversion|| converts the representation of object-level
- * first-class functions to meta-level data structures, namely ||closures||.
+ * ==Closure Conversion==
+ *
+ * **Closure conversion** converts the representation of object-level
+ * first-class functions to meta-level data structures, namely **closures**.
  * The consequences are twofold:
  *
  * # It eliminates the use of meta-level first-class functions to represent
@@ -115,7 +114,7 @@ object HOF {
  * implementation.  For example, a language like C that does not natively
  * support first-class functions can be used.
  *
- * After closure conversion, we have an interpreter in ||direct style||, that
+ * After closure conversion, we have an interpreter in **direct style**, that
  * is, not manipulating explicit continuations.
  */
 object HOF_CC {
@@ -141,7 +140,7 @@ object HOF_CC {
   def intp(exp : Exp) : Vlu = eval(exp, Nil)
 }
 
-/* $$ Call-by-Name CPS-Transformation $$
+/* ==Call-by-Name CPS-Transformation==
  *
  * The problem of evaluation-order dependence between the object-language and
  * the meta-language remains in the interpreter in direct style after closure
@@ -151,8 +150,8 @@ object HOF_CC {
  *
  * As to see how to implement a call-by-name language in a call-by-value
  * language without extending the meta-language, we decide our object-language
- * to be the call-by-name lambda calculus and use the ||call-by-name
- * CPS-transformation|| to transform the interpreter from direct style into
+ * to be the call-by-name lambda-calculus and use the **call-by-name
+ * CPS-transformation** to transform the interpreter from direct style into
  * continuation-passing style.
  *
  * The result of the transformation has the following features:
@@ -160,7 +159,7 @@ object HOF_CC {
  * # The evaluation order of the object-language is call-by-name.  It no
  *   longer depends on the evaluation order of the meta-language.  Even if
  *   someday Scala switches to call-by-name, our interpreter still correctly
- *   implements the call-by-name lambda calculus.
+ *   implements the call-by-name lambda-calculus.
  *
  * # The whole interpreter is tail recursive and can readily be tail-call
  *   optimized.
@@ -190,16 +189,17 @@ object HOF_CC_CbNCPS {
     case App(opr, opd) =>
       eval( opr, env
           , clo => clo match {
-              case Clo(bod, sen) => eval(bod, Thk(ctn => eval(opd, env, ctn)) :: sen, ctn)
+              case Clo(bod, sen) =>
+                eval(bod, Thk(ctn => eval(opd, env, ctn)) :: sen, ctn)
             } )
   }
 
   def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$ Defunctionalization $$
+/* ==Defunctionalization==
  *
- * ||Defunctionalization|| is a general program transformation technique that
+ * **Defunctionalization** is a general program transformation technique that
  * eliminates higher-order functions, by replacing the creation of
  * first-class functions with the construction of data structures and the
  * application of first-class functions with the destruction of data
@@ -241,7 +241,6 @@ object HOF_CC_CbNCPS {
  * defines a function that will first add {{n}} to and then multiply by {{n}}
  * every integer in a list {{xs}}.
  */
-
 def map(f : Int => Int, xs : List[Int]) : List[Int] = xs match {
   case Nil => Nil
   case x :: xs => f(x) :: map(f, xs)
@@ -353,17 +352,16 @@ object HOF_DFP {
  * {{Ctn => Vlu}} for delayed computation.  We will defunctionalize them
  * separately.  We choose to first handle {{Ctn => Vlu}}.  The other way
  * around works as well and is left as an exercise.
- */
-
-/* $$$ Defunctionalizing Computation $$$
+ *
+ * ===Defunctionalizing Computation===
  *
  * For the function type {{Ctn => Vlu}}, we introduce an encoding data type
- * {{Cpu}}, the name abbreviating computation.  There is only one instance of
+ * {{Cpu}}, the name abbreviating computation.  The is only one instance of
  * type {{Ctn => Vlu}}, that is, {{ctn => eval(opd, env, ctn)}}.  It contains
- * two free variables, namely {{opd}} of type {{Exp}} and {{env}} of type
+ * two free variables, namely {{opd}} of type {{Exp}} and {{den}} of type
  * {{Env}}.  Therefore we introduce one data constructor {{Thk}} that takes
  * one argument of type {{Exp}} and the other of type {{Env}}, without loss of
- * generality, named {{opd}} and {{env}} respectively.  The "apply" function,
+ * generality, named {{opd}} and {{den}} respectively.  The "apply" function,
  * called {{apCp}} is readily defined.  During refactoring, the only function
  * instance is replaced with {{Thk(opd, env)}}, and the application of the
  * encoded function {{fun(ctn)}} is replaced with an explicit invocation of
@@ -404,9 +402,9 @@ object HOF_CC_CbNCPS_DFC {
   def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$$$ Inlining $$$$
+/* ====Inlining====
  *
- * We can similarly inline {{apCp}}, which gives:
+ * We can similarly inline {{apCp}}, giving:
  */
 object HOF_CC_CbNCPS_DFC_Inl {
   sealed abstract class Exp
@@ -440,15 +438,15 @@ object HOF_CC_CbNCPS_DFC_Inl {
   def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$$ Defunctionalizing Continuation $$$
+/* ===Defunctionalizing Continuation===
  *
  * Next we defunctionalize the function type {{Vlu => Vlu}} for continuation.
  * First, we introduce a new data type {{Ctn}}.  Second, we find that there
  * are two instances of the function type: {{clo => clo match { ... }}} and
  * {{vlu => vlu}}.  The former has three free variables: {{opd}} of type
- * {{Exp}}, {{env}} of type {{Env}} and {{ctn}} of type {{Ctn}}.  The latter
+ * {{Exp}}, {{den}} of type {{Env}} and {{ctn}} of type {{Ctn}}.  The latter
  * has no free variable.  Therefore we introduce two data constructors:
- * {{ApC}} with two parameters {{opd}} of type {{Exp}} and {{env}} of type
+ * {{ApC}} with two parameters {{opd}} of type {{Exp}} and {{den}} of type
  * {{Env}}, {{IdC}} with no parameter.  The apply function, called {{apCt}} is
  * again easily defined.  Third, we replace the two instances {{clo => clo
  * match { ... }}} and {{vlu => vlu}} with {{ApC(opd, env, ctn)}} and
@@ -494,11 +492,30 @@ object HOF_CC_CbNCPS_DFC_Inl_DFC {
   def intp(exp : Exp) : Vlu = eval(exp, Nil, IdC())
 }
 
-/* $$$$ Refactoring $$$$
+/* ====Refactoring (Again)====
  *
- * Unifying the data structure for closure and thunk, listifying the data
- * structure for continuation, and inlining {{apCt}} gives us an
- * implementation of Krivine's machine.
+ * Notice the structural similarity between the two constructors {{Clo}} and
+ * {{Thk}}: both take as arguments an {{Exp}} and an {{Env}}.  They can be
+ * unified them by keeping only one of them, say {{Thk}}.  Note that {{Cpu}}
+ * for computation is renamed {{Clo}} as a reminder for this unification.
+ * 
+ * Next observe another structual similarity between constructors of data type
+ * {{Ctn}} and those of Scala's built-in generic type {{List[T]}}: {{IdC}} is
+ * isomorphic to {{Nil}} and {{ApC}} is isomorphic to {{::}} if we group
+ * {{Exp}} and {{Env}} together as one data type, naturally {{Clo}}.  Thanks
+ * to this isomorphism, we can use {{Nil}} and {{::}} in place of {{IdC}} and
+ * {{ApC}}.  In other words, we can listify continuations.
+ *
+ * To further simplify the implementation, we inline {{apCt}}. 
+ *
+ * Finally, we modify the return type of {{eval}} to be the triple {{(Exp,
+ * Env, Ctn)}}.  If we consider the triple as a kind of "state", then {{eval}}
+ * can be viewd as a state transition function:
+ *
+ *   (Exp, Env, Ctn) --eval-> (Exp, Env, Ctn)
+ * 
+ * We will soon see that we thus obtain an implementaion of an abstract
+ * machine, called Krivine's machine.
  */
 object KAM {
   sealed abstract class Exp
@@ -510,81 +527,127 @@ object KAM {
 
   type Env = List[Clo]
 
-  case class Thk(exp : Exp, sen : Env) extends Clo
+  case class Thk(exp : Exp, env : Env) extends Clo
 
   type Ctn = List[Clo]
 
-  def eval(exp : Exp, env : Env, ctn : Ctn) : Exp = exp match {
+  def eval(exp : Exp, env : Env, ctn : Ctn) : (Exp, Env, Ctn) = exp match {
     case Var(ind) => env(ind) match {
-      case Thk(opd, env) => eval(opd, env, ctn)
+      case Thk(opd, den) => eval(opd, den, ctn)
     }
     case Abs(bod) => ctn match {
-      case Nil => Abs(bod)
-      case (Thk(opd, sen) :: ctn) => eval(bod, Thk(opd, sen) :: env, ctn)
+      case Nil => (bod, env, Nil)
+      case (Thk(opd, den) :: ctn) => eval(bod, Thk(opd, den) :: env, ctn)
     }
     case App(opr, opd) => eval(opr, env, Thk(opd, env) :: ctn)
   }
 
-  def intp(exp : Exp) : Exp = eval(exp, Nil, Nil) 
+  def intp(exp : Exp) : (Exp, Env, Ctn) = eval(exp, Nil, Nil) 
 }
 
-/* $$ Krivine's Abstract Machine $$ */
-
-/* $ From Abstract Machines to Evaluators $ */
-
-/* $$ The CEK Machine $$ */
-
+/* ==Krivine's Abstract Machine==
+ *
+ * An abstract machine is a conceptual model of a computer system.  It seems
+ * a machine because it allows step-by-step program execution.  It is abstract
+ * in that it leaves out lots of subtle details of real machines.  A **virtual
+ * machine** (like the JVM) can be similarly charaterized except that it laso
+ * has an instruction set.  Source programs must first be compiled to object
+ * programs in these instructions before they can be executed by a virtual
+ * machine.  An abstract machine does not have such an instruction set and in
+ * turn it executes source programs directly.  In this sense, an abstract
+ * machine works like an interpreter.  Like a real machine, an abstract
+ * machine also has states and works by updating states.  In other words, one
+ * run of an abstract machine can be viewed as a series of state transition.
+ * To understand an abstract machine boils down to understand its states and
+ * transition function.
+ *
+ * We present here an abstract machine, called Krivine's machine (simply
+ * K-machine), for the call-by-name lambda-calculus.  The K-machine has three
+ * registers: Exp to store lambda-expressions, Env for environments, and Ctn
+ * continuations.  The triple (Exp, Env, Ctn) completely renders the state of
+ * the K-machine.  Before we see the transition function of the K-machine, we
+ * need to know the syntax for things stored in these three registers.
+ *
+ * The syntax for lambda-expressions is given below:
+ *
+ *   (expression)  e ::= i    (index)
+ *                     | \ e  (abstraction)
+ *                     | e e  (application)
+ *
+ * That is, a lambda-expression can be a natural number (as de-Bruijn index
+ * for a nameless variable), or "\" (mimicing the look of the Greek letter
+ * lambda) followed by an expression (together notating lambda-abstraction,
+ * designating anonymous function), or two expressions juxtaposed (together
+ * designating function application).  Here are some lambda-expressions in
+ * this syntax (call it "de Bruijn") and Scala syntax:
+ *
+ *   | de Bruijn | Scala                       |
+ *   | \ 0       | (x : Any) => x              |
+ *   | \ \ 1     | (x : Any) => (y : Any) => x |
+ *
+ * The syntax for environments is the following:
+ *
+ *   (environment) r ::= []
+ *                     | (e, r) :: r
+ *
+ * That is, an environment is either empty or a pair of expression and
+ * environment boundled with another environment.
+ *
+ * =From Abstract Machines to Evaluators=
+ *
+ * ==The CEK-Machine==
+ */
 object CEK {
   sealed abstract class Exp
-  sealed abstract class EVa
+  sealed abstract class Vlu
   sealed abstract class Ctx
 
   case class Var(ind : Int) extends Exp
   case class Abs(bod : Exp) extends Exp
   case class App(opr : Exp, opd : Exp) extends Exp
 
-  type Env = List[EVa]
+  type Env = List[Vlu]
 
-  case class Clo(bod : Exp, sen : Env) extends EVa
+  case class Clo(bod : Exp, sen : Env) extends Vlu
 
   case class IdC() extends Ctx
-  case class ALC(opd : Exp, env : Env, ctx : Ctx) extends Ctx
-  case class ARC(clo : EVa, ctx : Ctx) extends Ctx
+  case class ACL(opd : Exp, env : Env, ctx : Ctx) extends Ctx
+  case class ACR(clo : Vlu, ctx : Ctx) extends Ctx
 
-  def apCt(ctx : Ctx, eva : EVa) : EVa = ctx match {
-    case IdC() => eva
-    case ALC(opd, env, ctx) => eva match {
-      case clo@Clo(_, _) => eval(opd, env, ARC(clo, ctx))
+  def apCt(ctx : Ctx, vlu : Vlu) : Vlu = ctx match {
+    case IdC() => vlu
+    case ACL(opd, env, ctx) => vlu match {
+      case clo@Clo(_, _) => eval(opd, env, ACR(clo, ctx))
     }
-    case ARC(Clo(bod, sen), ctx) => eval(bod, eva :: sen, ctx)
+    case ACR(Clo(bod, sen), ctx) => eval(bod, vlu :: sen, ctx)
   }
 
-  def eval(exp : Exp, env : Env, ctx : Ctx) : EVa = exp match {
+  def eval(exp : Exp, env : Env, ctx : Ctx) : Vlu = exp match {
     case Var(ind) => apCt(ctx, env(ind))
     case Abs(bod) => apCt(ctx, Clo(bod, env))
-    case App(opr, opd) => eval(opr, env, ALC(opd, env, ctx))
+    case App(opr, opd) => eval(opr, env, ACL(opd, env, ctx))
   }
 
-  def intp(exp : Exp) : EVa = eval(exp, Nil, IdC())
+  def intp(exp : Exp) : Vlu = eval(exp, Nil, IdC())
 }
 
-/* $$ Refunctionalization $$ */
+/* ==Refunctionalization== */
 
 object CEK_RF {
   sealed abstract class Exp
-  sealed abstract class EVa
+  sealed abstract class Vlu
 
   case class Var(ind : Int) extends Exp
   case class Abs(bod : Exp) extends Exp
   case class App(opr : Exp, opd : Exp) extends Exp
 
-  type Env = List[EVa]
+  type Env = List[Vlu]
 
-  case class Clo(bod : Exp, sen : Env) extends EVa
+  case class Clo(bod : Exp, sen : Env) extends Vlu
 
-  type Ctx = EVa => EVa
+  type Ctx = Vlu => Vlu
 
-  def eval(exp : Exp, env : Env, ctx : Ctx) : EVa = exp match {
+  def eval(exp : Exp, env : Env, ctx : Ctx) : Vlu = exp match {
     case Var(ind) => ctx(env(ind))
     case Abs(bod) => ctx(Clo(bod, env))
     case App(opr, opd) =>
@@ -595,24 +658,24 @@ object CEK_RF {
                          } ) )
   }
 
-  def intp(exp : Exp) : EVa = eval(exp, Nil, eva => eva) 
+  def intp(exp : Exp) : Vlu = eval(exp, Nil, vlu => vlu)
 }
 
-/* $$ Direct-Style Transformation $$ */
+/* ==Direct-Style Transformation== */
 
 object CEK_RF_DS {
   sealed abstract class Exp
-  sealed abstract class EVa
+  sealed abstract class Vlu
 
   case class Var(ind : Int) extends Exp
   case class Abs(bod : Exp) extends Exp
   case class App(opr : Exp, opd : Exp) extends Exp
 
-  type Env = List[EVa]
+  type Env = List[Vlu]
 
-  case class Clo(bod : Exp, sen : Env) extends EVa
+  case class Clo(bod : Exp, sen : Env) extends Vlu
 
-  def eval(exp : Exp, env : Env) : EVa = exp match {
+  def eval(exp : Exp, env : Env) : Vlu = exp match {
     case Var(ind) => env(ind)
     case Abs(bod) => Clo(bod, env)
     case App(opr, opd) => eval(opr, env) match {
@@ -620,24 +683,24 @@ object CEK_RF_DS {
     }
   }
 
-  def intp(exp : Exp, env : Env) : EVa = eval(exp, Nil)
+  def intp(exp : Exp, env : Env) : Vlu = eval(exp, Nil)
 }
 
-/* $$ Higher-Order-Function Conversion $$ */
+/* ==Higher-Order-Function Conversion== */
 
 object CEK_RF_DS_HOF {
   sealed abstract class Exp
-  sealed abstract class EVa
+  sealed abstract class Vlu
 
   case class Var(ind : Int) extends Exp
   case class Abs(bod : Exp) extends Exp
   case class App(opr : Exp, opd : Exp) extends Exp
 
-  type Env = List[EVa]
+  type Env = List[Vlu]
 
-  case class Prc(fun : EVa => EVa) extends EVa
+  case class Prc(fun : Vlu => Vlu) extends Vlu
 
-  def eval(exp : Exp, env : Env) : EVa = exp match {
+  def eval(exp : Exp, env : Env) : Vlu = exp match {
     case Var(ind) => env(ind)
     case Abs(bod) => Prc(arg => eval(bod, arg :: env))
     case App(opr, opd) => eval(opr, env) match {
@@ -645,7 +708,7 @@ object CEK_RF_DS_HOF {
     }
   }
 
-  def intp(exp : Exp) : EVa = eval(exp, Nil)
+  def intp(exp : Exp) : Vlu = eval(exp, Nil)
 }
 
 
@@ -877,8 +940,8 @@ object HOF_CbVCPS_DFP_DFC {
   case class Clo(bod : Imp, sen : Env) extends Imp
 
   case class IdC() extends Ctn
-  case class ALC(opd : Imp, den : Env, ctn : Ctn) extends Ctn
-  case class ARC(clo : Imp, ctn : Ctn) extends Ctn
+  case class ACL(opd : Imp, den : Env, ctn : Ctn) extends Ctn
+  case class ACR(clo : Imp, ctn : Ctn) extends Ctn
 
   def apCl(prc : Imp, arg : Imp, ctn : Ctn) : Imp = prc match {
     case Clo(bod, sen) => norm(bod, arg :: sen, ctn)
