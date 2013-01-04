@@ -9,16 +9,16 @@
  * The material in this lecture is loosely based on the following two papers:
  *
  * + Mads Sig Ager, Dariusz Biernacki, Olivier Danvy, and Jan Midtgaard. A
- * functional correspondence between evaluators and abstract machines. In Dale
- * Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
- * Conference on Principlesand Practice of Declarative Programming (PPDP'03),
- * pages 8-19. ACM Press, August 2003.
+ *   functional correspondence between evaluators and abstract machines. In
+ *   Dale Miller, editor, Proceedings of the Fifth ACM-SIGPLAN International
+ *   Conference on Principlesand Practice of Declarative Programming
+ *   (PPDP'03), pages 8-19. ACM Press, August 2003.
  *
  * + Olivier Danvy. On evaluation contexts, continuations, and the rest of the
- * computation. In Hayo Thielecke, editor, Proceedings of the Fourth ACM
- * SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department of
- * Computer Science, Queen Mary's College, pages 13-23, Venice, Italy, January
- * 2004. Invited talk.
+ *   computation. In Hayo Thielecke, editor, Proceedings of the Fourth ACM
+ *   SIGPLAN Workshop on Continuations, Technical report CSR-04-1, Department
+ *   of Computer Science, Queen Mary's College, pages 13-23, Venice, Italy,
+ *   January 2004. Invited talk.
  */
 
 /* This lecture consists of two parts.  The first part goes from evaluators to
@@ -41,13 +41,13 @@
  * meta-level higher-order functions in the following two senses:
  *
  * # Object-level first-class functions are implemented by meta-level
- * first-class functions and object-level function application is implemented
- * by meta-level function application.  Since object-level functions are
- * higher-order, meta-level functions implementing them must also be
- * higher-order.
+ *   first-class functions and object-level function application is
+ *   implemented by meta-level function application.  Since object-level
+ *   functions are higher-order, meta-level functions implementing them must
+ *   also be higher-order.
  *
  * # Since {{eval}} returns such meta-level functions as results, {{eval}} is
- * higher-order too.
+ *   higher-order too.
  */
 object HOF {
   sealed abstract class Exp
@@ -440,7 +440,7 @@ object HOF_CC_CbNCPS_DFC_Inl {
 
 /* ===Defunctionalizing Continuation===
  *
- * Next we defunctionalize the function type {{Vlu => Vlu}} for continuation.
+ * Next we defunctionalize functions of type {{Vlu => Vlu}} for continuation.
  * First, we introduce a new data type {{Ctn}}.  Second, we find that there
  * are two instances of the function type: {{clo => clo match { ... }}} and
  * {{vlu => vlu}}.  The former has three free variables: {{opd}} of type
@@ -506,14 +506,17 @@ object HOF_CC_CbNCPS_DFC_Inl_DFC {
  * to this isomorphism, we can use {{Nil}} and {{::}} in place of {{IdC}} and
  * {{ApC}}.  In other words, we can listify continuations.
  *
- * To further simplify the implementation, we inline {{apCt}}. 
+ * Again we can inline {{apCt}}. 
  *
  * Finally, we modify the return type of {{eval}} to be the triple {{(Exp,
- * Env, Ctn)}}.  If we consider the triple as a kind of "state", then {{eval}}
+ * Env, Ctn)}}.  Now if we consider the triple as a kind of "state", {{eval}}
  * can be viewd as a state transition function:
  *
- *   (Exp, Env, Ctn) --eval-> (Exp, Env, Ctn)
+ *   (Exp, Env, Ctn) ==eval=> (Exp, Env, Ctn)
  * 
+ * More accurately, {{eval}} takes a //big-step//, jumping from an initial
+ * state {{(exp, Nil, Nil)}} directly to a final state {{(bod, env, Nil)}}.
+ *
  * We will soon see that we thus obtain an implementaion of an abstract
  * machine, called Krivine's machine.
  */
@@ -563,12 +566,13 @@ object KAM {
  *
  * We present here an abstract machine, called Krivine's machine (simply
  * K-machine), for the call-by-name lambda-calculus.  The K-machine has three
- * registers: Exp to store lambda-expressions, Env for environments, and Ctn
- * continuations.  The triple (Exp, Env, Ctn) completely renders the state of
- * the K-machine.  Before we see the transition function of the K-machine, we
- * need to know the syntax for things stored in these three registers.
+ * registers: Exp to store lambda-expressions, Env to keep thunks, and Ctn
+ * to save continuations.  The triple (Exp, Env, Ctn) completely renders the
+ * state of the K-machine.  Before we see the transition function of the
+ * K-machine, we need to know the syntax for things stored in these three
+ * registers.
  *
- * The syntax for lambda-expressions is given below:
+ * The syntax for lambda-expressions is:
  *
  *   (expression)  e ::= i    (index)
  *                     | \ e  (abstraction)
@@ -585,13 +589,103 @@ object KAM {
  *   | \ 0       | (x : Any) => x              |
  *   | \ \ 1     | (x : Any) => (y : Any) => x |
  *
- * The syntax for environments is the following:
+ * Recall that de-Bruijn indices for a lambda-abstraction start with 0 from
+ * the innermost lambda-bound variable and count outward.  Thus the inner
+ * parameter {{y}} in the example {{(x : Any) => (y : Any) => x}} is indexed
+ * {{0}}, the outer {{x}} indexed {{1}}.  Hence the body of the de-Bruijn
+ * notation is {{1}}.  Note that Scala is typed whereas the pure
+ * lambda-calculus is not.  That is why there is no type annotation in the
+ * corresponding lambda-expression in de-Bruijn syntax.
+ * 
+ * The syntax for environments is:
  *
  *   (environment) r ::= []
  *                     | (e, r) :: r
  *
- * That is, an environment is either empty or a pair of expression and
- * environment boundled with another environment.
+ * That is, an environment is either empty or a thunk bundled with other
+ * thunks accumulated into another environment.
+ *
+ * The syntax for continuation is as follows:
+ *
+ *   (continuation) c ::= []
+ *                      | (e, r) :: c
+ *
+ * That is, a continuation is either nothing (left to do) or "to apply to a
+ * thunk" bundled with to-dos afterwards which manifests as another
+ * continuation.
+ *
+ * Notice that even though environments and continuations have isomorphic
+ * syntactic structure, they have different interpretations as clearly stated
+ * above.
+ *
+ * Now we are ready to see the state-transition function of the K-machine.  It
+ * is given by three transition rules (numbered from 1 to 3) presented in the
+ * following table:
+ *
+ * | (Exp , Env, Ctn          ) | ----> | (Exp, Env          , Ctn         ) |
+ * | (i   , r  , c            ) | --1-> | (e1 , r1           , c           ) |
+ * |                            |       |          where r(i) = (e1, r1)     |
+ * | (\ e , r  , (e1, r1) :: c) | --2-> | (e  , (e1, r1) :: r, c           ) |
+ * | (e e1, r  , c            ) | --3-> | (e  , r            , (e1, r) :: c) |
+ *
+ * Each transition rule covers one-step transition of states.  A run of the
+ * K-machine is a series of these transition steps.  There must be an initial
+ * state and a final state.  Let the lambda-program to be executed on the
+ * K-machine, in other words, the lambda-expression to be evaluated by the
+ * K-machine, be e.  The initial state of a run will always be (e, [], []),
+ * that is, with the register Exp initialized to e, and the register Env to
+ * empty and the register Ctn to nothing.  The final states of runs for
+ * different expressions may be different.  But two things are common: the
+ * machine halts when there is nothing left to do, that is, the register Ctn
+ * must be [].  So the final state will always have the pattern (e, r, []).
+ * e in the register Exp together with r in the register Env could be taken as
+ * the result.  Let us take a simple example, {{(\ 0) (\ 0)}}, and simulate
+ * its run on the K-machine.
+ *
+ *         ( Exp        , Env            , Ctn             )
+ *         ( (\ 0) (\ 0), []             , []              )
+ *   --3-> ( \ 0        , []             , (\ 0, []) :: [] )
+ *   --2-> ( 0          , (\ 0, []) :: [], []              )
+ *   --1-> ( \ 0        , []             , []              )
+ * 
+ * To see another example, {{(\ \ 1) (\ 0)}}, in run:
+ *
+ *         ( Exp          , Env            , Ctn             )
+ *         ( (\ \ 1) (\ 0), []             , []              )
+ *   --3-> ( \ \ 1        , []             , (\ 0, []) :: [] )
+ *   --2-> ( \ 1          , (\ 0, []) :: [], []              )
+ *
+ * This example shows that in the final state, the register Env does not
+ * necessarily hold the empty environment.
+ *
+ * As an exercise, try to simulate the execution of {{((\ \ 1) (\ 0)) (\ 0)}}
+ * on the K-machine.
+ *
+ * We see that to evaluate a lambda-expression e, the K-machine sets the
+ * initial state to (e, [], []), applies the three transition rules repeatedly
+ * (for zero or more times) until the register Ctn holds [] again, which means
+ * there is nothing left to do, and then halts.  This hints the following idea
+ * for an implementation of the K-machine: we can define a Scala function,
+ * {{red1(exp : Exp, env : Env, ctn : Ctn) : (Exp, Env, Ctn)}}, and then form
+ * a do-while loop with a loop variable {{s : (Exp, Env, Ctn)}} initialized to
+ * {{(exp, [], [])}}, with a loop condition checking whether {{ctn}} is [],
+ * and in the body tries to apply one of the transition rules.  The actual
+ * implementation is left as an exercise.
+ *
+ * We finally remark that {{KAM}} we have defined above is indeed such an
+ * implementation.  Note that {{eval}} is tail-recursive, thus it is
+ * equivalent to a loop in effect.  The difference between {{eval}} and
+ * {{red1}} is: the former implements a big-step transition, while the latter
+ * a small-step transition.
+ *
+ * To conclude, we have demonstrated how to reach an abstract-machine-level
+ * impelementation of the call-by-name lambda-calculus from a high-level
+ * implementation using higher-order features by performing a series of
+ * program transformations on the evaluators.  Next, we will do reverse
+ * engineering: we will start with an abstract-machine-level implementation of
+ * the call-by-value lambda-calculus, do the reverse of those program
+ * transformations we have seen, and reach a high-level implementation using
+ * higher-order features.
  *
  * =From Abstract Machines to Evaluators=
  *
