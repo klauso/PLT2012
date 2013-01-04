@@ -103,7 +103,7 @@ to part I are followed, a use case would be:
       def callFib(n: Int) : Int =
         evalIf0(App(fib, n), valueIf0Semantics)(Map()) match {
           case valueIf0Semantics.Num(m) => m
-          case _ => sys.error("Bug in factorial!")
+          case _ => sys.error("Bug in fib!")
         }
 
       assert(
