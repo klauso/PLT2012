@@ -2,7 +2,7 @@
 
 ==Abstract Syntax vs. Concrete Syntax==
 
-==Structural Induction on Derivations==
+==Rule Induction Rules==
 
-==Big-step Operational Semantics==
+==Structural Evaluation Semantics==
 
