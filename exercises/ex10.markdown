@@ -1,8 +1,8 @@
-=Exercise Session 10=
+#Exercise Session 10#
 
-==Abstract Syntax vs. Concrete Syntax==
+##Abstract Syntax vs. Concrete Syntax##
 
-==Rule Induction Rules==
+##Rule Induction Rules##
 
-==Structural Evaluation Semantics==
+##Structural Evaluation Semantics##
 
