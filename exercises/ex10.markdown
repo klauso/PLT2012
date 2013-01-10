@@ -41,9 +41,7 @@ Exp ::= Num(Int)
       | Div(Exp, Exp)
 ```
 
-vs.
-
-Prefix notation, infix notation, postfis notation, English, etc.
+and in Scala
 
 ```scala
 sealed abstract class Exp
@@ -53,6 +51,9 @@ case class Sub(lhs : Exp, rhs : Exp) extends Exp
 case class Mul(lhs : Exp, rhs : Exp) extends Exp
 case class Div(lhs : Exp, rhs : Exp) extends Exp
 ```
+vs.
+
+Prefix notation, infix notation, postfix notation, English, etc.
 
 ##Rule Induction##
 
