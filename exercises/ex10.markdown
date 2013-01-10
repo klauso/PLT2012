@@ -2,7 +2,43 @@
 
 ##Abstract Syntax vs. Concrete Syntax##
 
-##Rule Induction Rules##
+The abstract syntax for arithmetic expressions
+
+```
+Exp ::= Num | Exp Opr Exp
+Opr ::= + | - | * | /
+```
+
+renders the *intrinsic* structure.
+
+The concrete syntax for arithmetic expressions
+
+```
+Exp  ::= Exp1 | Exp LOp Exp1
+Exp1 ::= Exp2 | Exp1 HOp Exp2
+Exp2 ::= Num | ( Exp )
+
+LOp ::= + | -
+HOp ::= * | /
+```
+
+depicts the *extrinsic* notation.
+
+##Rule Induction##
+
+###Inductive Definitions###
+
+Inductively defined sets: natural numbers, arithmetic expressions
+
+Inductively defined relations: m <= n, evaluation relation of arithmetic
+expressions
+
+###Rule Induction###
+
+Rule induction rules!
 
 ##Structural Evaluation Semantics##
+
+Give the **structurel evaluation semantics** (aka. **big-step semantics**,
+**natural semantics**) for arithmetic expressions.
 
