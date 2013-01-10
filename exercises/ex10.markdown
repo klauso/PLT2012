@@ -2,27 +2,57 @@
 
 ##Abstract Syntax vs. Concrete Syntax##
 
-The abstract syntax for arithmetic expressions
+###Specification vs. Identification###
 
 ```
-Exp ::= Num | Exp Opr Exp
+Exp ::= Int | Exp Opr Exp
 Opr ::= + | - | * | /
 ```
 
-renders the *intrinsic* structure.
-
-The concrete syntax for arithmetic expressions
+vs.
 
 ```
 Exp  ::= Exp1 | Exp LOp Exp1
 Exp1 ::= Exp2 | Exp1 HOp Exp2
-Exp2 ::= Num | ( Exp )
+Exp2 ::= Int | ( Exp )
 
 LOp ::= + | -
 HOp ::= * | /
 ```
 
-depicts the *extrinsic* notation.
+###Theoretical Formulation###
+
+```
+e (- Exp
+n (- Int
+
+e ::= n | e1 + e2 | e1 - e2 | e1 * e2 | e1 / e2
+```
+
+Is it abstract?
+
+###Abstract vs. Concrete###
+
+```
+Exp ::= Num(Int)
+      | Add(Exp, Exp)
+      | Sub(Exp, Exp)
+      | Mul(Exp, Exp)
+      | Div(Exp, Exp)
+```
+
+vs.
+
+Prefix notation, infix notation, postfis notation, English, etc.
+
+```scala
+sealed abstract class Exp
+
+case class Add(lhs : Exp, rhs : Exp) extends Exp
+case class Sub(lhs : Exp, rhs : Exp) extends Exp
+case class Mul(lhs : Exp, rhs : Exp) extends Exp
+case class Div(lhs : Exp, rhs : Exp) extends Exp
+```
 
 ##Rule Induction##
 
@@ -30,15 +60,15 @@ depicts the *extrinsic* notation.
 
 Inductively defined sets: natural numbers, arithmetic expressions
 
-Inductively defined relations: m <= n, evaluation relation of arithmetic
+Inductively defined relations: m div n, evaluation relation of arithmetic
 expressions
 
 ###Rule Induction###
 
 Rule induction rules!
 
-##Structural Evaluation Semantics##
+##(Structural) Evaluation Semantics##
 
-Give the **structurel evaluation semantics** (aka. **big-step semantics**,
+Give the **(structural) evaluation semantics** (aka. **big-step semantics**,
 **natural semantics**) for arithmetic expressions.
 
