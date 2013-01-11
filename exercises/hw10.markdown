@@ -8,7 +8,7 @@ Expressions) presented in the lecture, in BNF and in Scala.
 2. Give a concrete syntax for BAE.  Choose one from prefix, infix, postfix, or
 English.
 
-##Rule Induction##
+##Inductive Definitions and Rule Induction##
 
 1. Give an inductive definition for the ternary relation *REM*:
 
