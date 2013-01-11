@@ -18,7 +18,7 @@ English.
    You can assume the availability of other arithmetic operations or
 relations.
 
-2. Use the inductive definition for *REM*, prove
+2. Use the inductive definition for *REM*, prove that
 
    > *(m, n) REM r1* and *(m, n) REM r2* implies *r1 = r2*.
 
@@ -27,11 +27,11 @@ relations.
 1. Give the evaluation semantics for BAE.
 
 2. Implement both the evaluation semantics and the multi-step reduction
-semantics for BAE.  Then show that the two interpreters give the same results
-for the some expressions by a reasonable number of tests.
+semantics for BAE.  Show that the two implementations give the same results
+for the same expressions by a reasonable number of tests.
 
 3. Prove that the evaluation semantics coincides with the multi-step reduction
-semantics.  That is, prove
+semantics.
 
    > For every *e (- Exp*, *e ===> v* if and only if *e --->\* v*.
 

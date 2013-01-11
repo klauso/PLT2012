@@ -40,7 +40,7 @@ Exp ::= Num(Int)
       | Prm(Opr, Exp, Exp)
 ```
 
-and in Scala
+or
 
 ```scala
 sealed abstract class Exp
@@ -55,24 +55,34 @@ vs.
 
 Prefix notation, infix notation, postfix notation, English, etc.
 
-##Rule Induction##
+##Inductive Definitions and Rule Induction##
 
 ###Inductive Definitions###
 
 Inductively defined sets: natural numbers, arithmetic expressions
 
-Inductively defined relations: m div n, evaluation relation of arithmetic
+Inductively defined relations: m DIV n, evaluation relation of arithmetic
 expressions
 
 ###Rule Induction###
 
 Rule induction rules!
 
+1. Prove that the sum of the first *n* natural numbers is *n \* (n + 1) / 2*.
+
+2. Prove that the number of leaves is one more than the number of nodes in the
+abstract syntax tree for an arithmetic expressions.
+
+3. Prove that *m DIV n1* and *m DIV n2* implies *m DIV n1 + n2*.
+
 ##Evaluation Semantics vs Reduction Semantics##
 
-Give the **(structural) evaluation semantics** (aka. **(structural) big-step
+1. Give the **(structural) evaluation semantics** (aka. **(structural) big-step
 (operational) semantics**, **natural semantics**) for arithmetic expressions.
 
-Compare evaluation semantics and **(structural) reduction semantics** (aka.
+2. Compare evaluation semantics and **(structural) reduction semantics** (aka.
 **(structural) small-step (operational) semantics**.
+
+3. Prove that the evaluation semantics coincides with the multi-step reduction
+semantics.
 
