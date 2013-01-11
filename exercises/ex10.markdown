@@ -1,4 +1,4 @@
-#Exercise Session 10#
+#Exercise 10#
 
 ##Abstract Syntax vs. Concrete Syntax##
 

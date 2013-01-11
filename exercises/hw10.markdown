@@ -1,0 +1,37 @@
+#Homework 10#
+
+##Abstract Syntax vs. Concrete Syntax##
+
+1. Give the abstract syntax for the language BAE (Boolean and Arithmetic
+Expressions) presented in the lecture, in BNF and in Scala.
+
+2. Give a concrete syntax for BAE.  Choose one from prefix, infix, postfix, or
+English.
+
+##Rule Induction##
+
+1. Give an inductive definition for the ternary relation *rem*:
+
+   > *(m, n) rem r* if *r* is the remainder when *n* is divided by *m*, where
+   > *m /= 0*.
+
+   You can assume the availability of other arithmetic operations or
+relations.
+
+2. Use the inductive definition for *REM*, prove
+
+   > *(m, n) REM r1* and *(m, n) REM r2* implies *r1 = r2*.
+
+##Evaluation Semantics vs Reduction Semantics##
+
+1. Give the evaluation semantics for BAE.
+
+2. Implement both the evaluation semantics and the multi-step reduction
+semantics for BAE.  Then show that the two interpreters give the same results
+for the some expressions by a reasonable number of tests.
+
+3. Prove that the evaluation semantics coincides with the multi-step reduction
+semantics.  That is, prove
+
+   > For every *e (- Exp*, *e ===> v* if and only if *e --->\* v*.
+
