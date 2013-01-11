@@ -61,14 +61,14 @@ Prefix notation, infix notation, postfix notation, English, etc.
 
 Inductively defined sets: natural numbers, arithmetic expressions
 
-Inductively defined relations: m DIV n, evaluation relation of arithmetic
+Inductively defined relations: *m DIV n*, evaluation relation of arithmetic
 expressions
 
 ###Rule Induction###
 
 Rule induction rules!
 
-1. Prove that the sum of the first *n* natural numbers is *n \* (n + 1) / 2*.
+1. Prove that the sum of the first *n* natural numbers is _n \* (n + 1) / 2_.
 
 2. Prove that the number of leaves is one more than the number of nodes in the
 abstract syntax tree for an arithmetic expressions.
