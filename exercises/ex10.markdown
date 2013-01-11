@@ -25,8 +25,10 @@ HOp ::= * | /
 ```
 e (- Exp
 n (- Int
+o (- Opr
 
-e ::= n | e1 + e2 | e1 - e2 | e1 * e2 | e1 / e2
+e ::= n | e1 o e2
+o ::= + | - | * | /
 ```
 
 Is it abstract?
@@ -35,10 +37,7 @@ Is it abstract?
 
 ```
 Exp ::= Num(Int)
-      | Add(Exp, Exp)
-      | Sub(Exp, Exp)
-      | Mul(Exp, Exp)
-      | Div(Exp, Exp)
+      | Prm(Opr, Exp, Exp)
 ```
 
 and in Scala
@@ -46,11 +45,12 @@ and in Scala
 ```scala
 sealed abstract class Exp
 
-case class Add(lhs : Exp, rhs : Exp) extends Exp
-case class Sub(lhs : Exp, rhs : Exp) extends Exp
-case class Mul(lhs : Exp, rhs : Exp) extends Exp
-case class Div(lhs : Exp, rhs : Exp) extends Exp
+type Opr = String
+
+case class Num(int : Int) extends Exp
+case class Prm(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
 ```
+
 vs.
 
 Prefix notation, infix notation, postfix notation, English, etc.
@@ -68,8 +68,11 @@ expressions
 
 Rule induction rules!
 
-##(Structural) Evaluation Semantics##
+##Evaluation Semantics vs Reduction Semantics##
 
-Give the **(structural) evaluation semantics** (aka. **big-step semantics**,
-**natural semantics**) for arithmetic expressions.
+Give the **(structural) evaluation semantics** (aka. **(structural) big-step
+(operational) semantics**, **natural semantics**) for arithmetic expressions.
+
+Compare evaluation semantics and **(structural) reduction semantics** (aka.
+**(structural) small-step (operational) semantics**.
 
