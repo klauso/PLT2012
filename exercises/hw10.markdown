@@ -33,5 +33,5 @@ for the same expressions by a reasonable number of tests.
 3. Prove that the evaluation semantics coincides with the multi-step reduction
 semantics.
 
-   > For every *e (- Exp*, *e ===> v* if and only if *e --->\* v*.
+   > For every *e (- Exp*, *e ===> v* if and only if _e --->\* v_.
 
