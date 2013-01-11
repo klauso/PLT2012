@@ -10,7 +10,7 @@ English.
 
 ##Rule Induction##
 
-1. Give an inductive definition for the ternary relation *rem*:
+1. Give an inductive definition for the ternary relation *REM*:
 
    > *(m, n) rem r* if *r* is the remainder when *n* is divided by *m*, where
    > *m /= 0*.
