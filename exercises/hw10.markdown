@@ -2,15 +2,15 @@
 
 ##Abstract Syntax vs. Concrete Syntax##
 
-1. Give the abstract syntax for the language BAE (Boolean and Arithmetic
+1. Give the abstract syntax for the language ABE (Arithmetic-Boolean
 Expressions) presented in the lecture, in BNF and in Scala.
 
-2. Give a concrete syntax for BAE.  Choose one from prefix, infix, postfix, or
+2. Give a concrete syntax for ABE.  Choose one from prefix, infix, postfix, or
 English.
 
 ##Inductive Definitions and Rule Induction##
 
-1. Give an inductive definition for the ternary relation *REM*:
+1. Give an inductive definition for the ternary relation *Rem*:
 
    > *(m, n) rem r* if *r* is the remainder when *n* is divided by *m*, where
    > *m /= 0*.
@@ -18,16 +18,16 @@ English.
    You can assume the availability of other arithmetic operations or
 relations.
 
-2. Use the inductive definition for *REM*, prove that
+2. Use the inductive definition for *Rem*, prove that
 
-   > *(m, n) REM r1* and *(m, n) REM r2* implies *r1 = r2*.
+   > *(m, n) Rem r1* and *(m, n) Rem r2* implies *r1 = r2*.
 
 ##Evaluation Semantics vs Reduction Semantics##
 
-1. Give the evaluation semantics for BAE.
+1. Give the evaluation semantics for ABE.
 
 2. Implement both the evaluation semantics and the multi-step reduction
-semantics for BAE.  Show that the two implementations give the same results
+semantics for ABE.  Show that the two implementations give the same results
 for the same expressions by a reasonable number of tests.
 
 3. Prove that the evaluation semantics coincides with the multi-step reduction

@@ -61,7 +61,7 @@ Prefix notation, infix notation, postfix notation, English, etc.
 
 Inductively defined sets: natural numbers, arithmetic expressions
 
-Inductively defined relations: *m DIV n*, evaluation relation of arithmetic
+Inductively defined relations: *m Div n*, evaluation relation of arithmetic
 expressions
 
 ###Rule Induction###
@@ -73,7 +73,7 @@ Rule induction rules!
 2. Prove that the number of leaves is one more than the number of nodes in the
 abstract syntax tree for an arithmetic expressions.
 
-3. Prove that *m DIV n1* and *m DIV n2* implies *m DIV n1 + n2*.
+3. Prove that *m Div n1* and *m Div n2* implies *m Div n1 + n2*.
 
 ##Evaluation Semantics vs Reduction Semantics##
 
