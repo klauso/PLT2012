@@ -37,7 +37,7 @@ Is it abstract?
 
 ```
 Exp ::= Num(Int)
-      | Prm(Opr, Exp, Exp)
+      | Cpd(Opr, Exp, Exp)
 ```
 
 or
@@ -48,7 +48,7 @@ sealed abstract class Exp
 type Opr = String
 
 case class Num(int : Int) extends Exp
-case class Prm(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
+case class Cpd(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
 ```
 
 vs.
