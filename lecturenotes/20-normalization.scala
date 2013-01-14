@@ -14,7 +14,7 @@
  * The motivating example for this lecture is the following
  * FAE program:
  *
- *     Fun('y, Fun('x, Add('x, Add('y, 1))))
+ *     App(Fun('y, Fun('x, Add('x, Add('y, 1)))), 2)
  *
  * Evaluating this program yields ...
  *
