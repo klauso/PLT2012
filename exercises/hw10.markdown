@@ -5,8 +5,8 @@
 1. Give the abstract syntax for the language ABE (Arithmetic-Boolean
 Expressions) presented in the lecture, in BNF and in Scala.
 
-2. Give a concrete syntax for ABE.  Choose one from prefix, infix, postfix, or
-English.
+2. Give a concrete syntax other than infix notation for ABE.  That is, choose
+either prefix notation or postfix notation.
 
 ##Inductive Definitions and Rule Induction##
 
