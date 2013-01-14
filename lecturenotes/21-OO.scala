@@ -1,4 +1,4 @@
-/* This is the definition of mini OO language we designed in class on December 19, 2011.
+/* This is the definition of mini OO language.
  * I've added a small test case which also illustrates how one can encode boolean
  * arithmetic with pure objects. This encoding is not purely hypothetic: Pure OO
  * languages such as Smalltalk do model booleans like this.
