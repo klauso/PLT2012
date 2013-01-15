@@ -115,140 +115,143 @@ m, n1, n2 (- N, m Div n1 and m Div n2 implies m Div (n1 + n2).
 
 ##Evaluation Semantics vs Reduction Semantics##
 
-1. Give the **(structural) evaluation semantics** (aka. **(structural) big-step
-(operational) semantics**, **natural semantics**) for arithmetic expressions.
+1. Give the **(structural) evaluation semantics** (aka. **(structural)
+   big-step (operational) semantics**, **natural semantics**) for arithmetic
+   expressions.
 
-We first define a syntactic category for *values*.  For convenience, we
-integrate it into the semi-abstract syntax given above for arithmetic
-expressions.  Hereby we have the following syntax definition:
-
-```
-e (- Exp
-n (- Int
-o (- Opr
-v (- Val
-
-e ::= v | e1 o e2
-o ::= + | - | * | /
-
-v ::= n
-```
-
-The evaluation semantics for arithmetic expressions is given by a evaluation
-relation between expressions and values (the final form of expressions after a
-series of reductions), notated as `e ===> v`, indutively defined as follows:
+   We first define a syntactic category for *values*.  For convenience, we
+   integrate it into the semi-abstract syntax given above for arithmetic
+   expressions.  Hereby we have the following syntax definition:
 
 ```
----------- Num
- v ===> v
-
- e1 ===> v1
- e2 ===> v2
----------------------------- Cpd
- e1 o e2 ===> op(o, v1, v2)
+   e (- Exp
+   n (- Int
+   o (- Opr
+   v (- Val
+   
+   e ::= v | e1 o e2
+   o ::= + | - | * | /
+   
+   v ::= n
 ```
 
-The inductive definition contains two rules, one named **Num** without any
-premise (a so-called **axiom**), one named **Cpd** with two premises.  The
-axiom **Num** essentially says that a value evaluates to itself.  In this
-example, a value can only be a number.  The rule **Cpd** says, to obtain the
-value of the compound expression `e1 o e2`, evaluate `e1` to `v1` and `e2` to
-`v2`, then use a primitive operation corresponding to the operator `o` to get
-the value of the whole expression from the two values `v1` and `v2`.  Note
-that for simple arithmetic expressions, the order of the two premises does not
-matter since the evaluation of the two sub-expressions are independent.
-
-These rules should remind you of the interpreter you have crafted for
-arithmetic expressions.
-
-Here is a demonstration of how to apply these evaluation rules to obtain the
-value of an example expression: `1 + 2 * 3 - 4`.  Note that we assume the
-meta-function `op` can handle the operator `*` and `+` correctly.
+   The evaluation semantics for arithmetic expressions is given by a
+   evaluation relation between expressions and values (the final form of
+   expressions after a series of reductions), notated as `e ===> v`,
+   indutively defined as follows:
 
 ```
-                ---------- Num  ---------- Num
-                 2 ===> 2        3 ===> 3
----------- Num  ----------------------------Cpd
- 1 ===> 1        2 * 3 ===> op(*, 2, 3) = 6
--------------------------------------------- Cpd  ---------- Num
- 1 + 2 * 3 ===> op(+, 1, 6) = 7                    4 ===> 4
------------------------------------------------------------- Cpd
-       1 + 2 * 3 - 4 ===> op(+, 7, 4) = 3
+   ---------- Num
+    v ===> v
+   
+    e1 ===> v1
+    e2 ===> v2
+   ---------------------------- Cpd
+    e1 o e2 ===> op(o, v1, v2)
 ```
 
-So we know the value of the expression `1 + 2 * 3` is `7`.
+   The inductive definition contains two rules, one named **Num** without any
+   premise (a so-called **axiom**), one named **Cpd** with two premises.  The
+   axiom **Num** essentially says that a value evaluates to itself.  In this
+   example, a value can only be a number.  The rule **Cpd** says, to obtain
+   the value of the compound expression `e1 o e2`, evaluate `e1` to `v1` and
+   `e2` to `v2`, then use a primitive operation corresponding to the operator
+   `o` to get the value of the whole expression from the two values `v1` and
+   `v2`.  Note that for simple arithmetic expressions, the order of the two
+   premises does not matter since the evaluation of the two sub-expressions
+   are independent.
+
+   These rules should remind you of the interpreter you have crafted for
+   arithmetic expressions.
+
+   Here is a demonstration of how to apply these evaluation rules to obtain
+   the value of an example expression: `1 + 2 * 3 - 4`.  Note that we assume
+   the meta-function `op` can handle the operator `*` and `+` correctly.
+
+```
+                   ---------- Num  ---------- Num
+                    2 ===> 2        3 ===> 3
+   ---------- Num  ----------------------------Cpd
+    1 ===> 1        2 * 3 ===> op(*, 2, 3) = 6
+   -------------------------------------------- Cpd  ---------- Num
+    1 + 2 * 3 ===> op(+, 1, 6) = 7                    4 ===> 4
+   ------------------------------------------------------------ Cpd
+          1 + 2 * 3 - 4 ===> op(+, 7, 4) = 3
+```
+
+   So we know the value of the expression `1 + 2 * 3` is `7`.
 
 2. Compare evaluation semantics and **(structural) reduction semantics** (aka.
-**(structural) small-step (operational) semantics**.
+   **(structural) small-step (operational) semantics**.
 
-The reduction semantics for arithmetic expressions is given by a reduction
-relation between expressions, notated as `e ---> e'`, inductively defined as
-follows:
+   The reduction semantics for arithmetic expressions is given by a reduction
+   relation between expressions, notated as `e ---> e'`, inductively defined
+   as follows:
 
 ```
----------------------------- Red
- v1 o v2 ---> op(o, v1, v2)
+   ---------------------------- Red
+    v1 o v2 ---> op(o, v1, v2)
 
- e1 ---> e1'
------------------------ RdL
- e1 o e2 ---> e1' o e2
+    e1 ---> e1'
+   ----------------------- RdL
+    e1 o e2 ---> e1' o e2
+    
+    e2 ---> e2'
+   ----------------------- RdR
+    e1 o e2 ---> e1 o e2'
+```
  
- e2 ---> e2'
------------------------ RdR
- e1 o e2 ---> e1 o e2'
+   The axiom **Red** says that we can invoke the primitve operation
+   corresponding to the operator `o` only when both its operands have reduced
+   to values.  The rule **RdL** covers one-step reduction of the left operand
+   of a compound expression, while the rule **RdR** covers that of the right
+   operand.  Note that there is no longer a rule like `v ---> v`, since a
+   value cannot be reduced in *one step* to anything.  If such a rule is
+   included in the definition, after an expression is reduced to a value, one
+   can keep reducing it to itself by applying this rule till the end of the
+   world (Who knows when it is, maybe Maya people?).
+ 
+   Here is a demonstration of how to apply these reduction rules to obtain the
+   final result the same expression `1 + 2 * 3 - 4`.  Again, we assume the
+   correctness of the meta-function `op`.
+ 
 ```
-
-The axiom **Red** says that we can invoke the primitve operation corresponding
-to the operator `o` only when both its operands have reduced to values.  The
-rule **RdL** covers one-step reduction of the left operand of a compound
-expression, while the rule **RdR** covers that of the right operand.  Note
-that there is no longer a rule like `v ---> v`, since a value cannot be
-reduced in *one step* to anything.  If such a rule is included in the
-definition, after an expression is reduced to a value, one can keep reducing
-it to itself by applying this rule till the end of the world (Who knows
-when it is, maybe Maya people?).
-
-Here is a demonstration of how to apply these reduction rules to obtain the
-final result the same expression `1 + 2 * 3 - 4`.  Again, we assume the
-correctness of the meta-function `op`.
-
+   ---------------------------- Red
+    2 * 3 ---> op(*, 2, 3) = 6
+   ---------------------------- RdR
+    1 + 2 * 3 ---> 1 + 6
+   ------------------------------ RdL
+    1 + 2 * 3 - 4 ---> 1 + 6 - 4
 ```
----------------------------- Red
- 2 * 3 ---> op(*, 2, 3) = 6
----------------------------- RdR
- 1 + 2 * 3 ---> 1 + 6
------------------------------- RdL
- 1 + 2 * 3 - 4 ---> 1 + 6 - 4
+ 
+   This is just one-step reduction.  To reach the final result of the
+   expression, we need continue reducing the result expression `1 + 6 - 4`:
+ 
 ```
-
-This is just one-step reduction.  To reach the final result of the expression,
-we need continue reducing the result expression `1 + 6 - 4`:
-
+   ---------------------------- Red
+    1 + 6 ---> op(+, 1, 6) = 7
+   ---------------------------- RdL
+    1 + 6 - 4 ---> 7 - 4
 ```
----------------------------- Red
- 1 + 6 ---> op(+, 1, 6) = 7
----------------------------- RdL
- 1 + 6 - 4 ---> 7 - 4
+ 
+   Go on reducing `7 - 4`:
+ 
 ```
-
-Go on reducing `7 - 4`:
-
+   ---------------------------- Red
+    7 - 4 ---> op(-, 7, 4) = 3
 ```
----------------------------- Red
- 7 - 4 ---> op(-, 7, 4) = 3
-```
-
-Now that the number `3` can no longer be reduced, it is the result of the
-whole expression.  So we have seen that the original expression `1 + 2 * 3 -
-4* is reduced by *three* steps to the number `3`, that is:
+ 
+   Now that the number `3` can no longer be reduced, it is the result of the
+   whole expression.  So we have seen that the original expression `1 + 2 * 3
+   - 4* is reduced by *three* steps to the number `3`, that is:
 
 ```
-1 + 2 * 3 - 4 ---> 1 + 6 - 4 ---> 7 - 4 ---> 3
+   1 + 2 * 3 - 4 ---> 1 + 6 - 4 ---> 7 - 4 ---> 3
 ```
-
-Note that the number of reduction steps is clearly indicated by the number of
-occurences of the rule **Red** in the three derivation trees.
+ 
+   Note that the number of reduction steps is clearly indicated by the number
+   of occurences of the rule **Red** in the three derivation trees.
 
 3. Prove that the evaluation semantics coincides with the multi-step reduction
-semantics.
+   semantics.
 
