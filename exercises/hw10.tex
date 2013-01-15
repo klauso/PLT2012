@@ -1,0 +1,118 @@
+\documentclass[a4paper,12pt]{article}
+
+% Use the Classic Thesis style
+%
+% \usepackage[nochapters]{classicthesis}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% Use text fonts
+%
+\usepackage{lmodern}  % the Latin Modern fonts which is an enhanced version of the Computer Modern fonts
+% \usepackage{tgschola}  % the Gyre Schola fonts which is an enhanced version of the New Centrury Schoolbook fonts
+
+% Use math fonts
+%
+% \usepackage{concmath}  % the Concrete Math fonts
+% \usepackage{euler}  % the Euler Math fonts
+% \usepackage{kerkis}  % the Kerkis fonts
+
+% Some font packages that provide math font may override the text font, the
+% following three commands reset it to the default.
+%
+% For the Latin Modern fonts
+%
+% \renewcommand{\rmdefault}{lmr}
+% \renewcommand{\sfdefault}{lmss}
+% \renewcommand{\ttdefault}{lmtt}
+%
+% For the Gyre Schola fonts
+%
+% \renewcommand{\rmdefault}{qcs}
+
+\usepackage{amsmath}
+
+% Use the MH bundle
+%
+% \usepackage{mhsetup}
+% \usepackage{mathtools}
+% \usepackage{mathstyle}
+% \usepackage{breqn}
+% \usepackage{empheq}
+% \usepackage{flexisym}
+
+% Use AMS-style theorem
+%
+\usepackage{amsthm}
+% \theoremstyle{definition}
+% \newtheorem{theorem}{Theorem}
+
+% Use MATH formulas in PARagraph mode Typesetting Inference Rules
+% 
+\usepackage{mathpartir}
+
+% New commands
+%
+\newcommand{\term}[1]{\textsf{#1}}
+
+\include{prelude}
+
+% Front elements
+%
+\title{
+ Programming Languages and Types \\~\\
+ \textbf{Homework 10}
+}
+\author{
+ Yi Dai
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract Syntax vs. Concrete Syntax}
+
+\begin{enumerate}
+ \item Give the abstract syntax for the language ABE (Arithmetic-Boolean Expressions)
+  presented in the lecture, in BNF and in Scala.
+
+ \item Give a concrete syntax other than infix notation for ABE. That is, choose either
+  prefix notation or postfix notation.
+\end{enumerate}
+
+\section{Inductive Definitions and Rule Induction}
+
+\begin{enumerate}
+ \item Give an inductive definition for the ternary relation $Rem$:
+  \[
+    (m, n)\ Rem\ r\ \text{if}\ r\ \text{is the remainder when}\ n\ \text{is divided by}\
+    m, \text{where}\ m \ne 0.
+  \]
+  You can assume the availability of other arithmetic operations or relations.
+
+ \item Use the inductive definition for Rem, prove that
+  \[
+    (m, n)\ Rem\ r_1\ \text{and}\ (m, n)\ Rem\ r_2\ \text{implies}\ r1 = r2.
+  \]
+\end{enumerate}
+
+\section{Evaluation Semantics vs. Reduction Semantics}
+
+\begin{enumerate}
+ \item Give the evaluation semantics for ABE.
+
+ \item Implement both the evaluation semantics and the multi-step reduction semantics for
+  ABE. Show that the two implementations give the same results for the same expressions by
+  a reasonable number of tests.
+
+ \item Prove that the evaluation semantics coincides with the multi-step reduction 
+  semantics, that is,
+  \[ \forall e \in Exp, e \Longrightarrow v\ \text{if and only if}\ e \longrightarrow^{*}
+      v.
+  \]
+\end{enumerate}
+
+\end{document}
+
