@@ -1,0 +1,152 @@
+<h1 id="exercise-10">Exercise 10</h1>
+<h2 id="abstract-syntax-vs.-concrete-syntax">Abstract Syntax vs. Concrete Syntax</h2>
+<h3 id="specification-vs.-identification">Specification vs. Identification</h3>
+<pre><code>Exp ::= Int | Exp Opr Exp
+Opr ::= + | - | * | /</code></pre>
+<p>vs.</p>
+<pre><code>Exp  ::= Exp1 | Exp LOp Exp1
+Exp1 ::= Exp2 | Exp1 HOp Exp2
+Exp2 ::= Int | ( Exp )
+
+LOp ::= + | -
+HOp ::= * | /</code></pre>
+<h3 id="theoretical-formulation">Theoretical Formulation</h3>
+<pre><code>e (- Exp
+n (- Int
+o (- Opr
+
+e ::= n | e1 o e2
+o ::= + | - | * | /</code></pre>
+<p>Is it abstract?</p>
+<h3 id="abstract-vs.-concrete">Abstract vs. Concrete</h3>
+<pre><code>Exp ::= Num(Int)
+      | Cpd(Opr, Exp, Exp)</code></pre>
+<p>or</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">sealed</span> <span class="kw">abstract</span> <span class="kw">class</span> Exp
+
+<span class="kw">type</span> Opr = String
+
+<span class="kw">case</span> <span class="kw">class</span> <span class="fu">Num</span>(<span class="dt">int</span> : Int) <span class="kw">extends</span> Exp
+<span class="kw">case</span> <span class="kw">class</span> <span class="fu">Cpd</span>(opr : Opr, lhs : Exp, rhs : Exp) <span class="kw">extends</span> Exp</code></pre>
+<p>vs.</p>
+<p>Prefix notation, infix notation, postfix notation, English, German, etc.</p>
+<h2 id="inductive-definitions-and-rule-induction">Inductive Definitions and Rule Induction</h2>
+<h3 id="inductive-definitions">Inductive Definitions</h3>
+<ol style="list-style-type: decimal">
+<li><p>Inductively defined sets: natural numbers, arithmetic expressions</p></li>
+<li><p>Inductively defined relations: <em>m Div n</em>, evaluation relation of arithmetic expressions</p></li>
+</ol>
+<h3 id="rule-induction">Rule Induction</h3>
+<p>Rule induction rules!</p>
+<ol style="list-style-type: decimal">
+<li><p>Prove that the sum of the first <em>n</em> natural numbers is <em>n * (n + 1) / 2</em>.</p></li>
+<li><p>Prove that <em>m Div n1</em> and <em>m Div n2</em> implies <em>m Div (n1 + n2)</em>.</p>
+<pre><code>Proof
+
+  of P(m Div n1) = [for every n2 (- N, m Div n2 implies m Div (n1 + n2)] for
+  every m Div n1, by rule induction on m Div n1
+
+- Base case: for ---------, we want to prove P(m Div 0) = [for every n2 (- N,
+                  m Div 0
+
+  m Div n2 implies m Div (0 + n2)].
+
+  Since 0 + n2 = n2, essentially we want to prove m Div n2 assuming m Div n2,
+  which is trivial.
+
+                          m Div n1
+- Inductive case: for ----------------, we want to prove P(m Div (n1 + m)) = [
+                       m Div (n1 + m)
+
+  for every n2 (- N, m Div n2 implies m Div (n1 + m + n2)], assuming the
+  inductive hypothesis P(m Div n1) = [for every n2 (- N, m Div n2 implies m
+  Div (n1 + n2)].
+
+  Suppose for every n2 (- N, m Div n2, then by the inductive hypothesis, we
+
+                                                m Div n 
+  have m Div (n1 + n2), then apply the rule --------------- by instantiating n
+                                             m Div (n + m)
+
+  with (n1 + n2), we can conclude m Div (n1 + n2 + m).  That is,
+
+     m Div (n1 + n2)
+  ---------------------.  Further, by associativity and commutativity of +,
+   m Div (n1 + n2 + m)
+
+  from m Div (n1 + n2 + m), we have m Div (n1 + m + n2), which is exactly what
+  we want to prove.
+
+Therefore, we have proved P(m Div n1) for every m Div n1, that is, for every
+m, n1, n2 (- N, m Div n1 and m Div n2 implies m Div (n1 + n2).</code></pre></li>
+</ol>
+<h2 id="evaluation-semantics-vs-reduction-semantics">Evaluation Semantics vs Reduction Semantics</h2>
+<ol style="list-style-type: decimal">
+<li>Give the <strong>(structural) evaluation semantics</strong> (aka. <strong>(structural) big-step (operational) semantics</strong>, <strong>natural semantics</strong>) for arithmetic expressions.
+<p>We first define a syntactic category for <em>values</em>. For convenience, we integrate it into the semi-abstract syntax given above for arithmetic expressions. Hereby we have the following syntax definition:</p>
+<pre><code>e (- Exp
+n (- Int
+o (- Opr
+v (- Val
+
+e ::= v | e1 o e2
+o ::= + | - | * | /
+
+v ::= n</code></pre>
+<p>The evaluation semantics for arithmetic expressions is given by a evaluation relation between expressions and values (the final form of expressions after a series of reductions), notated as <code>e ===&gt; v</code>, inductively defined as follows:</p>
+<pre><code>---------- Num
+ v ===&gt; v
+
+ e1 ===&gt; v1
+ e2 ===&gt; v2
+---------------------------- Cpd
+ e1 o e2 ===&gt; op(o, v1, v2)</code></pre>
+<p>The inductive definition contains two rules, one named <strong>Num</strong> without any premise (a so-called <strong>axiom</strong>), one named <strong>Cpd</strong> with two premises. The axiom <strong>Num</strong> essentially says that a value evaluates to itself. In this example, a value can only be a number. The rule <strong>Cpd</strong> says, to obtain the value of the compound expression <code>e1 o e2</code>, evaluate <code>e1</code> to <code>v1</code> and <code>e2</code> to <code>v2</code>, then use a primitive operation corresponding to the operator <code>o</code> to get the value of the whole expression from the two values <code>v1</code> and <code>v2</code>. Note that for simple arithmetic expressions, the order of the two premises does not matter since the evaluation of the two sub-expressions are independent.</p>
+<p>These rules should remind you of the interpreter you have crafted for arithmetic expressions.</p>
+<p>Here is a demonstration of how to apply these evaluation rules to obtain the value of an example expression: <code>1 + 2 * 3 - 4</code>. Note that we assume the meta-function <code>op</code> can handle the operator <code>*</code> and <code>+</code> correctly.</p>
+<pre><code>                ---------- Num  ---------- Num
+                 2 ===&gt; 2        3 ===&gt; 3
+---------- Num  ----------------------------Cpd
+ 1 ===&gt; 1        2 * 3 ===&gt; op(*, 2, 3) = 6
+-------------------------------------------- Cpd  ---------- Num
+ 1 + 2 * 3 ===&gt; op(+, 1, 6) = 7                    4 ===&gt; 4
+------------------------------------------------------------ Cpd
+       1 + 2 * 3 - 4 ===&gt; op(+, 7, 4) = 3</code></pre>
+<p>So we know the value of the expression <code>1 + 2 * 3</code> is <code>7</code>.</p></li>
+</ol>
+<ol start="2" style="list-style-type: decimal">
+<li>Compare evaluation semantics and <strong>(structural) reduction semantics</strong> (aka. <strong>(structural) small-step (operational) semantics</strong>.
+<p>The reduction semantics for arithmetic expressions is given by a reduction relation between expressions, notated as <code>e ---&gt; e'</code>, inductively defined as follows:</p>
+<pre><code>---------------------------- Red
+ v1 o v2 ---&gt; op(o, v1, v2)
+
+ e1 ---&gt; e1&#39;
+----------------------- RdL
+ e1 o e2 ---&gt; e1&#39; o e2
+ 
+ e2 ---&gt; e2&#39;
+----------------------- RdR
+ e1 o e2 ---&gt; e1 o e2&#39;</code></pre>
+<p>The axiom <strong>Red</strong> says that we can invoke the primitve operation corresponding to the operator <code>o</code> only when both its operands have reduced to values. The rule <strong>RdL</strong> covers one-step reduction of the left operand of a compound expression, while the rule <strong>RdR</strong> covers that of the right operand. Note that there is no longer a rule like <code>v ---&gt; v</code>, since a value cannot be reduced in <em>one step</em> to anything. If such a rule is included in the definition, after an expression is reduced to a value, one can keep reducing it to itself by applying this rule till the end of the world (Who knows when it is, maybe Maya people?).</p>
+<p>Here is a demonstration of how to apply these reduction rules to obtain the final result the same expression <code>1 + 2 * 3 - 4</code>. Again, we assume the correctness of the meta-function <code>op</code>.</p>
+<pre><code>---------------------------- Red
+ 2 * 3 ---&gt; op(*, 2, 3) = 6
+---------------------------- RdR
+ 1 + 2 * 3 ---&gt; 1 + 6
+------------------------------ RdL
+ 1 + 2 * 3 - 4 ---&gt; 1 + 6 - 4</code></pre>
+<p>This is just one-step reduction. To reach the final result of the expression, we need continue reducing the result expression <code>1 + 6 - 4</code>:</p>
+<pre><code>---------------------------- Red
+ 1 + 6 ---&gt; op(+, 1, 6) = 7
+---------------------------- RdL
+ 1 + 6 - 4 ---&gt; 7 - 4</code></pre>
+<p>Go on reducing <code>7 - 4</code>:</p>
+<pre><code>---------------------------- Red
+ 7 - 4 ---&gt; op(-, 7, 4) = 3</code></pre>
+<p>Now that the number <code>3</code> can no longer be reduced, it is the result of the whole expression. So we have seen that the original expression <code>1 + 2 * 3    - 4* is reduced by *three* steps to the number</code>3`, that is:</p>
+<pre><code>1 + 2 * 3 - 4 ---&gt; 1 + 6 - 4 ---&gt; 7 - 4 ---&gt; 3</code></pre>
+<p>Note that the number of reduction steps is clearly indicated by the number of occurences of the rule <strong>Red</strong> in the three derivation trees.</p></li>
+</ol>
+<ol start="3" style="list-style-type: decimal">
+<li>Prove that the evaluation semantics coincides with the multi-step reduction semantics.</li>
+</ol>
