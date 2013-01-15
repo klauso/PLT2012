@@ -70,7 +70,48 @@ Rule induction rules!
 
 1. Prove that the sum of the first *n* natural numbers is _n \* (n + 1) / 2_.
 
-2. Prove that *m Div n1* and *m Div n2* implies *m Div n1 + n2*.
+2. Prove that *m Div n1* and *m Div n2* implies *m Div (n1 + n2)*.
+
+```
+Proof
+
+  of P(m Div n1) = [for every n2 (- N, m Div n2 implies m Div (n1 + n2)] for
+  every m Div n1, by rule induction on m Div n1
+
+- Base case: for ---------, we want to prove P(m Div 0) = [for every n2 (- N,
+                  m Div 0
+
+  m Div n2 implies m Div (0 + n2)].
+
+  Since 0 + n2 = n2, essentially we want to prove m Div n2 assuming m Div n2,
+  which is trivial.
+
+                          m Div n1
+- Inductive case: for ----------------, we want to prove P(m Div (n1 + m)) = [
+                       m Div (n1 + m)
+
+  for every n2 (- N, m Div n2 implies m Div (n1 + m + n2)], assuming the
+  inductive hypothesis P(m Div n1) = [for every n2 (- N, m Div n2 implies m
+  Div (n1 + n2)].
+
+  Suppose for every n2 (- N, m Div n2, then by the inductive hypothesis, we
+
+                                                m Div n 
+  have m Div (n1 + n2), then apply the rule --------------- by instantiating n
+                                             m Div (n + m)
+
+  with (n1 + n2), we can conclude m Div (n1 + n2 + m).  That is,
+
+     m Div (n1 + n2)
+  ---------------------.  Further, by associativity and commutativity of +,
+   m Div (n1 + n2 + m)
+
+  from m Div (n1 + n2 + m), we have m Div (n1 + m + n2), which is exactly what
+  we want to prove.
+
+Therefore, we have proved P(m Div n1) for every m Div n1, that is, for every
+m, n1, n2 (- N, m Div n1 and m Div n2 implies m Div (n1 + n2).
+```
 
 ##Evaluation Semantics vs Reduction Semantics##
 
