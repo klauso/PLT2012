@@ -1,0 +1,37 @@
+\usepackage{stmaryrd}  % the St Mary’s Road symbol font
+
+
+\newcommand{\atangles}[1]{\langle#1\rangle}
+\newcommand{\atparens}[1]{(#1)}
+\newcommand{\atbracks}[1]{[#1]}
+\newcommand{\atbraces}[1]{\{#1\}}
+\newcommand{\atfloors}[1]{\lfloor#1\rfloor}
+\newcommand{\atceils}[1]{\lceil#1\rceil}
+\newcommand{\atucorners}[1]{\ulcorner#1\urcorner}
+\newcommand{\atlcorners}[1]{\llcorner#1\lrcorner}
+\newcommand{\atlparens}[1]{\llparenthesis#1\rrparenthesis}
+\newcommand{\atlbracks}[1]{\llbracket#1\rrbracket}
+\newcommand{\atbars}[1]{|#1|}
+\newcommand{\atbbars}[1]{\|#1\|}
+
+\newcommand{\inangles}[1]{\langle#1\rangle}
+\newcommand{\inparens}[1]{\left(#1\right)}
+\newcommand{\inbracks}[1]{\left[#1\right]}
+\newcommand{\inbraces}[1]{\left\{#1\right\}}
+\newcommand{\infloors}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\inceils}[1]{\left\lceil#1\right\rceil}
+\newcommand{\inucorners}[1]{\left\ulcorner#1\right\urcorner}
+\newcommand{\inlcorners}[1]{\left\llcorner#1\right\lrcorner}
+\newcommand{\inlparens}[1]{\left\llparenthesis#1\right\rrparenthesis}
+\newcommand{\inlbracks}[1]{\left\llbracket#1\right\rrbracket}
+\newcommand{\inbars}[1]{\left|#1\left|}
+\newcommand{\inbbars}[1]{\left\|#1\right\|}
+
+\newcommand{\texterr}[1]{\textcolor{red}{#1}}
+
+\newenvironment{grammar}
+ {\begin{center}\small\begin{tabular}{rrclr}}
+ {\end{tabular}\normalsize\end{center}}
+\newcommand{\prodhead}[5]{#1 & #2 & #3 & #4 & #5 \\}
+\newcommand{\prodrule}[3]{      & & #1 & #2 & #3 \\}
+
