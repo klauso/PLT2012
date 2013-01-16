@@ -36,7 +36,7 @@ Contents
 /*
 0. Necessary declarations from lecture notes 2-ae.scala and 3-wae.scala
 */
-sealed abstract class Exp 
+sealed abstract class Exp
 case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
@@ -44,18 +44,17 @@ case class Id(x: Symbol) extends Exp
 case class With(x: Symbol, xdef: Exp, body: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def sym2exp(x: Symbol) = Id(x)
-type Env = Map[Symbol,Int]
-case class Visitor[T](num:Int=>T, add:(T,T)=>T, mul:(T,T)=>T, id:Symbol=>T)
-def foldExp[T](v: Visitor[T], e: Exp) : T = {
+type Env = Map[Symbol, Int]
+case class Visitor[T](num: Int => T, add: (T, T) => T, mul: (T, T) => T, id: Symbol => T)
+def foldExp[T](v: Visitor[T], e: Exp): T = {
   e match {
     case Num(n) => v.num(n)
     case Id(x) => v.id(x)
-    case Add(l,r) => v.add(foldExp(v,l), foldExp(v,r))
-    case Mul(l,r) => v.mul(foldExp(v,l), foldExp(v,r))
+    case Add(l, r) => v.add(foldExp(v, l), foldExp(v, r))
+    case Mul(l, r) => v.mul(foldExp(v, l), foldExp(v, r))
     case With(x, xdef, body) => sys.error("AE expected, WAE encountered!")
   }
 }
-
 
 /*
 1. Github
@@ -78,21 +77,21 @@ d. Send us your changes via a "pull request".
 */
 
 // Syntax of function definition
-def twice (x : Int) : Int = 2 * x
+def twice(x: Int): Int = 2 * x
 
 // Function as lambda-abstraction
-val twice1 = (x : Int) => 2 * x
+val twice1 = (x: Int) => 2 * x
 
 // Functions are first-class values and can be taken as arguments.
-def apply_to_21(f : Int => Int) : Int = f(21)
+def apply_to_21(f: Int => Int): Int = f(21)
 apply_to_21(twice)
 apply_to_21(twice1)
 
 // Function-application syntax is available to all objects with an
 // `apply` method. Nevertheless, only instances of subclasses of
 // `Function` can be passed as a functional argument.
-val twice2 = new Object { def apply(x : Int) = 2 * x }
-val twice3 = new Function[Int,Int] { def apply(x : Int) = 2 * x }
+val twice2 = new Object { def apply(x: Int) = 2 * x }
+val twice3 = new Function[Int, Int] { def apply(x: Int) = 2 * x }
 
 twice2(21)
 twice3(21)
@@ -104,7 +103,7 @@ apply_to_21(twice3)
 
 // val twice4 = x => 2 * x // not enough info for type inference
 
-val twice4 : Int => Int = x => 2 * x
+val twice4: Int => Int = x => 2 * x
 
 apply_to_21(x => 2 * x)
 
@@ -127,21 +126,21 @@ val list123 = 1 :: (2 :: (3 :: Nil))
 
 // Deconstructing a list by pattern matching
 list123 match {
-  case Nil     => "Leere Liste"
+  case Nil => "Leere Liste"
   case x :: xs => "Mit " + x + " angefangene Liste"
 }
 
 // a) Please write a function to calculate the sum of a list of
 //    integers by pattern matching.
 
-   // def sum(list : List[Int]) : Int = list match { ... }
+// def sum(list : List[Int]) : Int = list match { ... }
 
 // b) Write a pretty-printer for lists of integers by pattern
 //    matching:
 //
 //    print( List(1, 2, 3) ) = "1 :: 2 :: 3 :: Nil"
 
-   // def print(list : List[Int]) : String = list match { ... }
+// def print(list : List[Int]) : String = list match { ... }
 
 /*
 4. Visitors
@@ -149,9 +148,9 @@ list123 match {
 */
 
 // Cf. `foldExp` in 2-ae.scala:104,125
-case class ListVisitor[T, R](nil : R, cons : (T, R) => R)
+case class ListVisitor[T, R](nil: R, cons: (T, R) => R)
 
-def foldList[T, R](list : List[T], visitor : ListVisitor[T, R]) : R =
+def foldList[T, R](list: List[T], visitor: ListVisitor[T, R]): R =
   list match {
     case Nil => visitor.nil
     case head :: tail => visitor.cons(head, foldList(tail, visitor))
@@ -159,11 +158,11 @@ def foldList[T, R](list : List[T], visitor : ListVisitor[T, R]) : R =
 
 // a) Reimplement `sum` and `print` through visitors.
 
-   // val sumVisitor : ListVisitor[Int, Int] =
-   // def sum =
+// val sumVisitor : ListVisitor[Int, Int] =
+// def sum =
 
-   // val printVisitor : ListVisitor[Int, String] =
-   // def print =
+// val printVisitor : ListVisitor[Int, String] =
+// def print =
 
 /*
 5. Church encoding
@@ -187,7 +186,7 @@ Advantages of Church encoding:
 Feel free to suggest other justifications for Church encoding.
 */
 
-abstract class ListC[T] { def apply[R](v : ListVisitor[T,R]) : R }
+abstract class ListC[T] { def apply[R](v: ListVisitor[T, R]): R }
 
 // a) Please complete the implementation of Church-encoded lists.
 //    The following lecture note may be helpful:
@@ -198,17 +197,17 @@ abstract class ListC[T] { def apply[R](v : ListVisitor[T,R]) : R }
 //
 //      case class ListVisitor[T, R](nil : R, cons : (T, R) => R)
 
-   // def nil[T] : ListC[T] = new ListC[T] {
-   //   def apply[R](v : ListVisitor[T, R]) : R =
-   // }
-   
-   // def cons[T](head : T, tail : ListC[T]) =
-   
-   // val list1234 = cons(1, cons(2, cons(3, cons(4, nil[Int]))))
-   
-   // def sum(listc : ListC[Int]) : Int =
-   
-   // def print(listc : ListC[Int]) : String =
+// def nil[T] : ListC[T] = new ListC[T] {
+//   def apply[R](v : ListVisitor[T, R]) : R =
+// }
+
+// def cons[T](head : T, tail : ListC[T]) =
+
+// val list1234 = cons(1, cons(2, cons(3, cons(4, nil[Int]))))
+
+// def sum(listc : ListC[Int]) : Int =
+
+// def print(listc : ListC[Int]) : String =
 
 /*
 6. Variables in AE
@@ -228,21 +227,21 @@ Hint about sets in Scala:
 
 // a) With pattern matching
 
-   // def variables1(e : Exp) : Set[Symbol] =
+// def variables1(e : Exp) : Set[Symbol] =
 
 // b) using a visitor and the `foldExp` function
 
-   // val variablesVisitor = Visitor[Set[Symbol]]( ... )
+// val variablesVisitor = Visitor[Set[Symbol]]( ... )
 
-   // def variables2(e : Exp) : Set[Symbol] = foldExp(variablesVisitor, e)
+// def variables2(e : Exp) : Set[Symbol] = foldExp(variablesVisitor, e)
 
 // c) Testcases, uncomment to execute. Feel free to add more!
 
-   // assert(variables1(Add('x, 'y)) == Set('x, 'y))
-   // assert(variables1(Mul(Add(9, 'y), Mul('x, 'y))) == Set('x, 'y))
+// assert(variables1(Add('x, 'y)) == Set('x, 'y))
+// assert(variables1(Mul(Add(9, 'y), Mul('x, 'y))) == Set('x, 'y))
 
-   // assert(variables2('x) == Set('x))
-   // assert(variables2(Add(Mul('x, 5), Add(4, 'x))) == Set('x))
+// assert(variables2('x) == Set('x))
+// assert(variables2(Add(Mul('x, 5), Add(4, 'x))) == Set('x))
 
 /*
 7. Free Variables in WAE
@@ -252,12 +251,12 @@ Hint about sets in Scala:
 // a) Implement a scala function that computes the set of all free (!)
 //    variables of a WAE term.
 
-   // def freeVariables(wae : Exp) : Set[Symbol] =
+// def freeVariables(wae : Exp) : Set[Symbol] =
 
 // b) Test cases; feel free to define more.
 
-   // assert(freeVariables(Id('x)) == Set('x))
-   // assert(freeVariables(With('x, 5, Add('x, 'y))) == Set('y))
+// assert(freeVariables(Id('x)) == Set('x))
+// assert(freeVariables(With('x, 5, Add('x, 'y))) == Set('y))
 
 /*
 8. Name binding
@@ -267,12 +266,12 @@ Hint about sets in Scala:
 // a) Please decide whether each occurrence of the symbols 'x, 'y
 //    in the following WAE term is binding, bound or free.
 
-With('x, 5,                   // Binding
-         Add('x,              //
-             With('x, 3,      //
-                      Mul('y, //
-                          'x) //
-)))
+With('x, 5, // Binding
+  Add('x, //
+    With('x, 3, //
+      Mul('y, //
+        'x) //
+        )))
 
 // b) Write a scala snippet where a name is shadowed. Describe the
 //    scopes of the name bindings.
@@ -280,7 +279,6 @@ With('x, 5,                   // Binding
 /* Scala snippet to explain the concept of "shadowing"
    ...
 */
-
 
 /*
 9. Substitution
@@ -303,23 +301,23 @@ With('x, 5,                   // Binding
 //    - You are welcome to implement an idea of your own,
 //      independent from the lecture and the hints here.
 
-def subst(e : Exp, i : Symbol, v : Exp) : Exp =
+def subst(e: Exp, i: Symbol, v: Exp): Exp =
   sys.error("TODO: Fix me!")
 
-def eval_by_value(e: Exp) : Int = e match {
+def eval_by_value(e: Exp): Int = e match {
   case Num(n) => n
-  case Id(x) => sys.error("Free variable: "+x)
-  case Add(l,r) => eval_by_value(l) + eval_by_value(r)
-  case Mul(l,r) => eval_by_value(l) * eval_by_value(r)
+  case Id(x) => sys.error("Free variable: " + x)
+  case Add(l, r) => eval_by_value(l) + eval_by_value(r)
+  case Mul(l, r) => eval_by_value(l) * eval_by_value(r)
   case With(x, xdef, body) =>
     eval_by_value(subst(body, x, Num(eval_by_value(xdef))))
 }
 
-def eval_by_name(e: Exp) : Int = e match {
+def eval_by_name(e: Exp): Int = e match {
   case Num(n) => n
-  case Id(x) => sys.error("Free variable: "+x)
-  case Add(l,r) => eval_by_name(l) + eval_by_name(r)
-  case Mul(l,r) => eval_by_name(l) * eval_by_name(r)
+  case Id(x) => sys.error("Free variable: " + x)
+  case Add(l, r) => eval_by_name(l) + eval_by_name(r)
+  case Mul(l, r) => eval_by_name(l) * eval_by_name(r)
   case With(x, xdef, body) =>
     eval_by_name(subst(body, x, xdef))
 }
@@ -334,4 +332,4 @@ def test_n1 = eval_by_name(err_exp1)
 // Both tests should produce the error "Free variable: y"
 // test_v1
 // test_n1
-  
+

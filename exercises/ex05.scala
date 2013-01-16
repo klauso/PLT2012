@@ -35,8 +35,8 @@ case class If0(cond: Exp, thenExp: Exp, elseExp: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
 case class NewBox(e: Exp) extends Exp
 case class SetBox(b: Exp, e: Exp) extends Exp
@@ -65,13 +65,12 @@ abstract class Value /* {var marked : Boolean} */
 
 case class MemoryCell(var flag: Int = 0, var content: Value = null)
 
-class Memory(length: Int) extends
-scala.collection.mutable.ArraySeq[MemoryCell] (length) {
+class Memory(length: Int) extends scala.collection.mutable.ArraySeq[MemoryCell](length) {
   // Primary constructor `new Memory(...)` executes statements
   // inside the class body.
   //
   // We want every position of the memory to be a memory cell.
-  def resetMemory() : Unit = {
+  def resetMemory(): Unit = {
     this.indices.foreach(index => this.update(index, MemoryCell()))
   }
 
@@ -96,13 +95,11 @@ type Stack = List[StackFrame]
 // lookup the value currently bound to an identifier. Be sure
 // not to violate static scoping.
 
-
-def addBinding(stack: Stack, x: Symbol, v: Value) : Stack =
+def addBinding(stack: Stack, x: Symbol, v: Value): Stack =
   sys.error("Implement me!")
 
-def lookupBinding(stack: Stack, x: Symbol) : Value =
+def lookupBinding(stack: Stack, x: Symbol): Value =
   sys.error("Implement me!")
-
 
 // The closure type saves the stack, which should contain all
 // information about the bindings at the point of function
@@ -116,9 +113,9 @@ case class AddressV(a: Int) extends Value
 // The store interface is unmodified.
 
 trait Store {
-  def malloc(stack: Stack, v: Value) : Int
-  def update(index: Int, v: Value) : Unit
-  def apply(index: Int) : Value
+  def malloc(stack: Stack, v: Value): Int
+  def update(index: Int, v: Value): Unit
+  def apply(index: Int): Value
 }
 
 // We retain the store without garbage collection so that
@@ -127,15 +124,15 @@ trait Store {
 
 class NoGCStore(size: Int) extends Store {
   val memory = new Memory(size)
-  var nextFreeAddr : Int = 0
-  def malloc(stack: Stack, v: Value) : Int = {
+  var nextFreeAddr: Int = 0
+  def malloc(stack: Stack, v: Value): Int = {
     val x = nextFreeAddr
     if (x >= size) sys.error("out of memory")
     nextFreeAddr += 1
     update(x, v)
     x
   }
-  def update(index: Int, v: Value) : Unit = memory(index).content = v
+  def update(index: Int, v: Value): Unit = memory(index).content = v
   def apply(index: Int) = memory(index).content
 }
 
@@ -146,13 +143,13 @@ class NoGCStore(size: Int) extends Store {
 //
 // You may assume that the store is mutable.
 
-def eval(e: Exp, stack: Stack, store: Store) : Value = e match {
+def eval(e: Exp, stack: Stack, store: Store): Value = e match {
 
   case Num(n) => sys.error("Implement me!")
 
   case Id(x) => sys.error("Implement me!")
 
-  case f@Fun(_, _) => sys.error("Implement me!")
+  case f @ Fun(_, _) => sys.error("Implement me!")
 
   case If0(cond, thenExp, elseExp) => sys.error("Implement me!")
 
@@ -181,7 +178,7 @@ class MyAwesomeStore(size: Int) extends Store {
   val memory = new Memory(size)
 
   // Put value in a newly allocated memory cell and return the address
-  def malloc(stack: Stack, v: Value) : Int = {
+  def malloc(stack: Stack, v: Value): Int = {
     sys.error("Implement me!")
   }
 
@@ -190,7 +187,7 @@ class MyAwesomeStore(size: Int) extends Store {
   // if you feel something useful toward garbage collection
   // could be done here.
 
-  def update(index: Int, v: Value) : Unit = memory(index).content = v
+  def update(index: Int, v: Value): Unit = memory(index).content = v
 
   def apply(index: Int) = memory(index).content
 }

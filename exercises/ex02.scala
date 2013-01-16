@@ -32,18 +32,18 @@ Contents
 2. Dynamic scoping
 */
 
-sealed abstract class Exp 
+sealed abstract class Exp
 case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
-case class Id(x: Symbol) extends Exp 
+case class Id(x: Symbol) extends Exp
 case class With(x: Symbol, xdef: Exp, body: Exp) extends Exp
 case class Call(f: Symbol, args: List[Exp]) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def sym2exp(x: Symbol) = Id(x)
-case class FunDef(args: List[Symbol], body: Exp) 
-type Funs = Map[Symbol,FunDef]
-type Env = Map[Symbol,Int]
+case class FunDef(args: List[Symbol], body: Exp)
+type Funs = Map[Symbol, FunDef]
+type Env = Map[Symbol, Int]
 def implement_me = Id('Implement_me)
 def evaluate_me = 0
 
@@ -56,35 +56,34 @@ def evaluate_me = 0
 // which evaluates to true_exp if cond is zero and to false_exp
 // otherwise.
 
-case class If0(cond : Exp, true_exp : Exp, false_exp : Exp) extends Exp
+case class If0(cond: Exp, true_exp: Exp, false_exp: Exp) extends Exp
 
-def eval(e : Exp, funs : Funs = Map(), env : Env = Map()) : Int = e match {
-  case Num(n)              => n
-  case Id(x)               => env(x)
-  case Add(lhs,rhs)        => eval(lhs, funs, env) + eval(rhs, funs, env)
-  case Mul(lhs,rhs)        => eval(lhs, funs, env) * eval(rhs, funs, env)
+def eval(e: Exp, funs: Funs = Map(), env: Env = Map()): Int = e match {
+  case Num(n) => n
+  case Id(x) => env(x)
+  case Add(lhs, rhs) => eval(lhs, funs, env) + eval(rhs, funs, env)
+  case Mul(lhs, rhs) => eval(lhs, funs, env) * eval(rhs, funs, env)
   case With(x, xdef, body) =>
-         eval(body, funs, env + ((x, eval(xdef, funs, env))))
-  case Call(f, args)       => {
-         val fd = funs(f)
-         if (fd.args.size != args.size)
-           sys.error("Mismatch of parameter number on invocation of " + f)
-         val vargs = args.map(eval(_, funs, env))
-         val newenv = Map() ++ fd.args.zip(vargs)
-         eval(fd.body, funs, newenv)
-       }
+    eval(body, funs, env + ((x, eval(xdef, funs, env))))
+  case Call(f, args) => {
+    val fd = funs(f)
+    if (fd.args.size != args.size)
+      sys.error("Mismatch of parameter number on invocation of " + f)
+    val vargs = args.map(eval(_, funs, env))
+    val newenv = Map() ++ fd.args.zip(vargs)
+    eval(fd.body, funs, newenv)
+  }
 
-// a) Implement the evaluation of If0
+  // a) Implement the evaluation of If0
 
-  case If0(cond, te, fe)   => evaluate_me
+  case If0(cond, te, fe) => evaluate_me
 }
 
 // b) Write a function `factorial` mapping n to
 //    n! = n*(n - 1)*(n - 2)*(n - 3)* ... * 1
 
 val factorial = 'factorial -> FunDef('n :: Nil,
-  implement_me
-)
+  implement_me)
 
 // c) Write the function `fib` that computes the n-th fibonacci number:
 //
@@ -93,8 +92,7 @@ val factorial = 'factorial -> FunDef('n :: Nil,
 //    fib(n) = fib(n - 1) + fib(n - 2)
 
 val fib = 'fib -> FunDef('n :: Nil,
-  implement_me
-)
+  implement_me)
 
 // d) Write the Ackermann function in the extended F1AE:
 //
@@ -103,11 +101,9 @@ val fib = 'fib -> FunDef('n :: Nil,
 //                |   ack(m - 1, ack(m, n - 1))   if   m > 0 and n > 0
 
 val ack = 'ack -> FunDef('m :: 'n :: Nil,
-  implement_me
-)
+  implement_me)
 
 val funs = Map(factorial, fib, ack)
-
 
 // Test cases. Uncomment to run.
 
@@ -188,42 +184,34 @@ List(2, 3, 4, 5, 6, 7, 3, 5, 7, 9, 11, 13, 5, 13, 29, 61, 125, 253))
 type Continuation = (Int, Env) => Int
 
 def eval_dynamic_scope(
-  e    : Exp,
-  funs : Funs = Map(),
-  env  : Env = Map(),
-  ctn  : Continuation = (result, _) => result
-) : Int = e match {
+  e: Exp,
+  funs: Funs = Map(),
+  env: Env = Map(),
+  ctn: Continuation = (result, _) => result): Int = e match {
   // Numbers yield a result; we can call the continuation and do the
   // rest of the computation.
-  case Num(n)
-    => ctn(n, env)
+  case Num(n) => ctn(n, env)
   // So are identifiers.
-  case Id(x)
-    => ctn(env(x), env)
+  case Id(x) => ctn(env(x), env)
   // For the sum of two subexpressions,
   // we evaluate the left-hand-side first,
   // giving it as continuation a function that will
   // evaluate the right-hand-side under the environment
   // after evaluation of the left-hand-side, and do the
   // rest of the computation  thereafter.
-  case Add(lhs, rhs)
-    => eval_dynamic_scope(
-         lhs, funs, env,
-         (value_lhs, env_after_lhs) =>
-         eval_dynamic_scope(
-            rhs, funs, env_after_lhs,
-            (value_rhs, env_after_rhs) =>
-            ctn(value_lhs + value_rhs, env_after_rhs)))
+  case Add(lhs, rhs) => eval_dynamic_scope(
+    lhs, funs, env,
+    (value_lhs, env_after_lhs) =>
+      eval_dynamic_scope(
+        rhs, funs, env_after_lhs,
+        (value_rhs, env_after_rhs) =>
+          ctn(value_lhs + value_rhs, env_after_rhs)))
   // Please complete the implementation of Mul-, With-, Call-
   // and If0-expressions. Call-expressions are the most difficult.
-  case Mul(lhs, rhs)
-    => evaluate_me
-  case With(x, xdef, body)
-    => evaluate_me
-  case Call(f, args)
-    => evaluate_me
-  case If0(cond, true_exp, false_exp)
-    => evaluate_me
+  case Mul(lhs, rhs) => evaluate_me
+  case With(x, xdef, body) => evaluate_me
+  case Call(f, args) => evaluate_me
+  case If0(cond, true_exp, false_exp) => evaluate_me
 }
 
 // Some test cases. Uncomment to run.
@@ -234,7 +222,7 @@ val e3 = Add(With('hidden_factor, 7, 0), Call('multiply, List(6)))
 val e4 = Call('multiply, List(With('hidden_factor, 7, 6)))
 
 val multiply = 'multiply -> FunDef('n :: Nil, Mul('n, 'hidden_factor))
-val dynamic_funs : Funs = Map(multiply)
+val dynamic_funs: Funs = Map(multiply)
 
 // assert(42 == eval_dynamic_scope(e1))
 // assert(42 == eval_dynamic_scope(e2))

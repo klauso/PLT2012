@@ -29,8 +29,8 @@ case class If0(cond: Exp, thenExp: Exp, elseExp: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
 case class NewBox(e: Exp) extends Exp
 case class SetBox(b: Exp, e: Exp) extends Exp
@@ -43,8 +43,8 @@ case class Seq(e1: Exp, e2: Exp) extends Exp
  * algorithm" is used, with two bit flags.
  */
 
-abstract class Value { 
-  var marked : Boolean = false
+abstract class Value {
+  var marked: Boolean = false
 }
 
 /* We will also use a mutable map instead of a map for environments.
@@ -65,9 +65,9 @@ case class AddressV(a: Int) extends Value
  */
 
 trait Store {
-  def malloc(stack: List[Env], v: Value) : Int
-  def update(index: Int, v: Value) : Unit
-  def apply(index: Int) : Value
+  def malloc(stack: List[Env], v: Value): Int
+  def update(index: Int, v: Value): Unit
+  def apply(index: Int): Value
 }
 
 /* In our interpreter, the stack of environments is only implicitly
@@ -78,85 +78,74 @@ trait Store {
  * for gc.
  */
 
-def eval(e: Exp, stack: List[Env], store: Store) : Value = e match {
+def eval(e: Exp, stack: List[Env], store: Store): Value = e match {
 
   case Num(n) => NumV(n)
 
   case Id(x) => stack.head(x)
 
-  case f@Fun(_, _) => ClosureV(f, stack.head)
+  case f @ Fun(_, _) => ClosureV(f, stack.head)
 
   /* With a mutable store, we do not have to thread it according to
    * the order of evaluation any more.
    */
 
-  case If0(cond, thenExp, elseExp)
-    => eval(cond, stack, store) match {
-         case NumV(0) => eval(thenExp, stack, store)
-         case _       => eval(elseExp, stack, store)
-       }
+  case If0(cond, thenExp, elseExp) => eval(cond, stack, store) match {
+    case NumV(0) => eval(thenExp, stack, store)
+    case _ => eval(elseExp, stack, store)
+  }
 
   /* The mutable store allows us to take advantage of Scala's
    * evaluation order and perform two pattern matchings
    * simultaneously.
    */
 
-  case Add(l, r)
-    => (eval(l, stack, store), eval(r, stack, store)) match {
-         case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
-         case _ => sys.error("can only add numbers")
-       }
+  case Add(l, r) => (eval(l, stack, store), eval(r, stack, store)) match {
+    case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
+    case _ => sys.error("can only add numbers")
+  }
 
-  case Mul(l, r)
-    => (eval(l, stack, store), eval(r, stack, store)) match {
-         case (NumV(v1), NumV(v2)) => NumV(v1 * v2)
-         case _ => sys.error("can only multiply numbers")
-       }
+  case Mul(l, r) => (eval(l, stack, store), eval(r, stack, store)) match {
+    case (NumV(v1), NumV(v2)) => NumV(v1 * v2)
+    case _ => sys.error("can only multiply numbers")
+  }
 
   /* A new environment should be pushed onto the stack only when
    * binding occurs. Where exactly in BCFAE do bindings happen?
    */
 
-  case App(f, a)
-    => eval(f, stack, store) match {
-         case ClosureV(f, cEnv)
-           => eval(
-                f.body,
-                (cEnv + (f.param -> eval(a, stack, store))) :: stack,
-                store
-              )
-         case _ => sys.error("can only apply functions")
-       }
+  case App(f, a) => eval(f, stack, store) match {
+    case ClosureV(f, cEnv) => eval(
+      f.body,
+      (cEnv + (f.param -> eval(a, stack, store))) :: stack,
+      store)
+    case _ => sys.error("can only apply functions")
+  }
 
   /* The mutable store allows us to implement Seq-expression
    * in terms of sequencing in Scala itself.
    */
 
-  case Seq(e1, e2)
-    => eval(e1, stack, store); eval(e2, stack, store)
+  case Seq(e1, e2) => eval(e1, stack, store); eval(e2, stack, store)
 
-  case NewBox(e: Exp)
-    => {
-         val a = store.malloc(stack, eval(e, stack, store))
-         AddressV(a)
-       }
+  case NewBox(e: Exp) => {
+    val a = store.malloc(stack, eval(e, stack, store))
+    AddressV(a)
+  }
 
-  case SetBox(b: Exp, e: Exp)
-    => eval(b, stack, store) match {
-         case AddressV(a)
-           => {
-                val ev = eval(e, stack, store)
-                store.update(a, ev)
-                ev
-              }
-         case _ => sys.error("can only set boxes")
-       }
+  case SetBox(b: Exp, e: Exp) => eval(b, stack, store) match {
+    case AddressV(a) => {
+      val ev = eval(e, stack, store)
+      store.update(a, ev)
+      ev
+    }
+    case _ => sys.error("can only set boxes")
+  }
 
-  case OpenBox(b: Exp)
-    => eval(b, stack, store) match {
-         case AddressV(a) => store(a)
-         case _ => sys.error("can only open boxes")
-       }
+  case OpenBox(b: Exp) => eval(b, stack, store) match {
+    case AddressV(a) => store(a)
+    case _ => sys.error("can only open boxes")
+  }
 }
 
 /* Here is one implementation of the Store interface that does not
@@ -167,9 +156,9 @@ class NoGCStore(size: Int) extends Store {
 
   val memory = new ArraySeq[Value](size)
 
-  var nextFreeAddr : Int = 0
+  var nextFreeAddr: Int = 0
 
-  def malloc(stack: List[Env], v: Value) : Int = {
+  def malloc(stack: List[Env], v: Value): Int = {
     val x = nextFreeAddr
     if (x >= size) sys.error("out of memory")
     nextFreeAddr += 1
@@ -177,7 +166,7 @@ class NoGCStore(size: Int) extends Store {
     x
   }
 
-  def update(index: Int, v: Value) : Unit = memory.update(index, v)
+  def update(index: Int, v: Value): Unit = memory.update(index, v)
 
   def apply(index: Int) = memory(index)
 }
@@ -189,11 +178,11 @@ class MarkAndSweepStore(size: Int) extends Store {
 
   val memory = new ArraySeq[Value](size)
 
-  var free : Int = size
+  var free: Int = size
 
-  var nextFreeAddr : Int = 0
+  var nextFreeAddr: Int = 0
 
-  def malloc(stack: List[Env], v: Value) : Int = {
+  def malloc(stack: List[Env], v: Value): Int = {
     if (free <= 0) gc(stack)
     if (free <= 0) sys.error("out of memory")
 
@@ -219,25 +208,24 @@ class MarkAndSweepStore(size: Int) extends Store {
     nextFreeAddr
   }
 
-  def update(index: Int, v: Value) : Unit = memory.update(index, v)
+  def update(index: Int, v: Value): Unit = memory.update(index, v)
 
   def apply(index: Int) = memory(index)
 
-  def allAddrInVal(v: Value) : Set[Int] = v match {
-    case AddressV(a)      => Set(a)
-    case NumV(_)          => Set.empty
+  def allAddrInVal(v: Value): Set[Int] = v match {
+    case AddressV(a) => Set(a)
+    case NumV(_) => Set.empty
     case ClosureV(f, env) => allAddrInEnv(env)
   }
 
-  def allAddrInEnv(env: Env) : Set[Int] =
+  def allAddrInEnv(env: Env): Set[Int] =
     env.values.map(allAddrInVal _).fold(Set.empty)(_ union _)
 
-  def mark(seed: Set[Int]) : Unit = {
+  def mark(seed: Set[Int]): Unit = {
     seed.foreach(memory(_).marked = true)
     val newAddresses = seed.flatMap(
-                         ad => allAddrInVal(memory(ad))
-                       ).filter(!memory(_).marked)
-    if(newAddresses != Set.empty) {
+      ad => allAddrInVal(memory(ad))).filter(!memory(_).marked)
+    if (newAddresses != Set.empty) {
       mark(newAddresses)
     }
   }
@@ -246,43 +234,39 @@ class MarkAndSweepStore(size: Int) extends Store {
    * What potential problem it could cause in a "real" interpreter?
    */
 
-  def sweep() : Unit = {
+  def sweep(): Unit = {
     memory.indices.foreach(
-      index =>   if (memory(index) == null) {
-                   /* No work needed on an empty memory cell */
-                 }
-                 else if (memory(index).marked) {
-                   /* Reset `marked` flag for the next gc */
-                   memory(index).marked = false
-                 }
-                 else {
-                   free += 1
-                   memory(index) = null
-                 }
-    )
+      index => if (memory(index) == null) {
+        /* No work needed on an empty memory cell */
+      } else if (memory(index).marked) {
+        /* Reset `marked` flag for the next gc */
+        memory(index).marked = false
+      } else {
+        free += 1
+        memory(index) = null
+      })
   }
 
-  def gc(stack: List[Env]) : Unit = {
+  def gc(stack: List[Env]): Unit = {
     println("\nSTARTING GC\nSTACK = " + stack + "\nSTORE = " + memory)
     mark(stack.map(allAddrInEnv _).fold(Set.empty)(_ union _))
     sweep()
     println("GC COMPLETE\nSTORE = " + memory +
-            "\nNUMBER OF FREE SLOTS = " + free)
+      "\nNUMBER OF FREE SLOTS = " + free)
   }
 }
 
 val test4 = wth('makedata, Fun('x, NewBox(NewBox(NewBox('x)))),
-                Seq(App('makedata, 1),
-                Seq(App('makedata, 2),
-                Seq(wth('s, App('makedata, 3),
-                            App('makedata, 's)),
-                    App('makedata, 4)))))
+  Seq(App('makedata, 1),
+    Seq(App('makedata, 2),
+      Seq(wth('s, App('makedata, 3),
+        App('makedata, 's)),
+        App('makedata, 4)))))
 
 def runTest4 = eval(
-                 test4,
-                 List(scala.collection.mutable.Map.empty),
-                 new MarkAndSweepStore(5)
-               )
+  test4,
+  List(scala.collection.mutable.Map.empty),
+  new MarkAndSweepStore(5))
 
 /* This model of garbage collection does not illustrate the difficulty
  * of memory management. In most languages, the size of the allocated

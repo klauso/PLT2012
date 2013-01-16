@@ -18,19 +18,19 @@ function?
 */
 
 // We do not seal Exp this time because we want to extend it later.
-abstract class Exp 
+abstract class Exp
 case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
 
-def eval(e : Exp) : Int = e match {
-  case Num(n)        => n
+def eval(e: Exp): Int = e match {
+  case Num(n) => n
   case Add(lhs, rhs) => eval(lhs) + eval(rhs)
   case Mul(lhs, rhs) => eval(lhs) * eval(rhs)
 }
 
-def print(e : Exp) : String = e match {
-  case Num(n)        => n.toString
+def print(e: Exp): String = e match {
+  case Num(n) => n.toString
   case Add(lhs, rhs) => "( " + print(lhs) + " + " + print(rhs) + " )"
   case Mul(lhs, rhs) => "( " + print(lhs) + " * " + print(rhs) + " )"
 }
@@ -43,26 +43,26 @@ print(e)
 
 */
 
-case class Id(x : Symbol) extends Exp
-case class With(x : Symbol, xdef : Exp, body : Exp) extends Exp
+case class Id(x: Symbol) extends Exp
+case class With(x: Symbol, xdef: Exp, body: Exp) extends Exp
 
-def bound_variables(e : Exp) : Set[Symbol] = e match {
-  case Num(n)        => Set()
+def bound_variables(e: Exp): Set[Symbol] = e match {
+  case Num(n) => Set()
   case Add(lhs, rhs) => bound_variables(lhs) ++ bound_variables(rhs)
   case Mul(lhs, rhs) => bound_variables(lhs) ++ bound_variables(rhs)
-  case Id(x)         => Set()
+  case Id(x) => Set()
   case With(x, d, b) => (bound_variables(d) ++ bound_variables(b)) + x
 }
 
-def free_variables(e : Exp) : Set[Symbol] = e match {
-  case Num(n)        => Set()
+def free_variables(e: Exp): Set[Symbol] = e match {
+  case Num(n) => Set()
   case Add(lhs, rhs) => free_variables(lhs) ++ free_variables(rhs)
   case Mul(lhs, rhs) => free_variables(lhs) ++ free_variables(rhs)
-  case Id(x)         => Set(x)
+  case Id(x) => Set(x)
   case With(x, d, b) => free_variables(d) ++ (free_variables(b) - x)
 }
 
-def  all_variables(e : Exp) = free_variables(e) ++ bound_variables(e)
+def all_variables(e: Exp) = free_variables(e) ++ bound_variables(e)
 
 /* WAE tests
 

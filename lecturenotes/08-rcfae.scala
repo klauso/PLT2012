@@ -17,7 +17,7 @@ be submitted as a "pull request". You can of course also send an email to Klaus 
  * Let's pretend we do not know that the sum of the first n integers is n*(n+1)/2
  * and instead compute the sum in a loop. Let's try to do this in FAE (with if0):
  */
- 
+
 sealed abstract class Exp
 case class Num(n: Int) extends Exp
 case class Id(name: Symbol) extends Exp
@@ -26,10 +26,10 @@ case class If0(cond: Exp, thenExp: Exp, elseExp: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
-val sumattempt = wth('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n,-1))))), App('sum, 10))
+val sumattempt = wth('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n, -1))))), App('sum, 10))
 
 /* However, sumattempt won't work and yield an unbound identifier error (why?).
  * An alternative would be to use a variant of the y combinator to support recursion
@@ -41,7 +41,7 @@ case class Letrec(x: Symbol, e: Exp, body: Exp) extends Exp
 
 /* Using letrec, our example can be expressed as follows. */
 
-val sum = Letrec('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n,-1))))), App('sum, 10))
+val sum = Letrec('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n, -1))))), App('sum, 10))
 
 /* Let's now consider the semantics of letrec. Consider the evaluation of
  * Letrec(x,e,body) in an environment env.
@@ -69,7 +69,6 @@ val sum = Letrec('sum, Fun('n, If0('n, 0, Add('n, App('sum, Add('n,-1))))), App(
  * To be able to use both mutable and immutable maps as environments, we define: 
  */
 
-
 /* No changes to the values in our language. */
 sealed abstract class Value
 
@@ -78,30 +77,29 @@ type Env = scala.collection.Map[Symbol, Value] // just "Map" defaults to scala.c
 case class NumV(n: Int) extends Value
 case class ClosureV(f: Fun, env: Env) extends Value
 
-
 /* The interpreter is unchanged except for the additional Letrec case. */
-def eval(e: Exp, env: Env) : Value = e match {
+def eval(e: Exp, env: Env): Value = e match {
   case Num(n: Int) => NumV(n)
   case Id(x) => env(x)
-  case If0(cond, thenExp, elseExp) => eval(cond,env) match {
-    case NumV(0) => eval(thenExp,env)
-    case _ => eval(elseExp,env)
-  }    
-  case Add(l,r) => {
-    (eval(l,env), eval(r,env)) match {
-      case (NumV(v1),NumV(v2)) => NumV(v1+v2)
+  case If0(cond, thenExp, elseExp) => eval(cond, env) match {
+    case NumV(0) => eval(thenExp, env)
+    case _ => eval(elseExp, env)
+  }
+  case Add(l, r) => {
+    (eval(l, env), eval(r, env)) match {
+      case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
       case _ => sys.error("can only add numbers")
     }
   }
-  case f@Fun(param,body) => ClosureV(f, env)
-  case App(f,a) => eval(f,env) match {
-    case ClosureV(f,closureEnv) => eval(f.body, closureEnv + (f.param -> eval(a,env)))
+  case f @ Fun(param, body) => ClosureV(f, env)
+  case App(f, a) => eval(f, env) match {
+    case ClosureV(f, closureEnv) => eval(f.body, closureEnv + (f.param -> eval(a, env)))
     case _ => sys.error("can only apply functions")
   }
-  case Letrec(x,e,body) => {
-    val mutableenv =  scala.collection.mutable.Map() ++ env // create mutable map, initialize it to env
-    mutableenv += x -> eval(e,mutableenv)  // evaluate e and then create circle in the environment
-    eval(body,mutableenv) // evaluate body in circular environment
+  case Letrec(x, e, body) => {
+    val mutableenv = scala.collection.mutable.Map() ++ env // create mutable map, initialize it to env
+    mutableenv += x -> eval(e, mutableenv) // evaluate e and then create circle in the environment
+    eval(body, mutableenv) // evaluate body in circular environment
   }
 }
 

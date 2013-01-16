@@ -36,25 +36,25 @@ be submitted as a "pull request". You can of course also send an email to Klaus 
  * before substitution, we substitute the unevaluated argument into the body.
  * The rest remains exactly the same. */
 
-def evalcbn(e: Exp) : Exp = e match {
-  case Id(v) => sys.error("unbound identifier: "+v)
-  case Add(l,r) => (evalcbn(l), evalcbn(r)) match {
-                     case (Num(x),Num(y)) => Num(x+y)
-                     case _ => sys.error("can only add numbers")
-                    }
-  case App(f,a) => evalcbn(f) match {
-     case Fun(x,body) => evalcbn( subst(body,x, a)) // no evaluation of a!
-     case _ => sys.error("can only apply functions")
+def evalcbn(e: Exp): Exp = e match {
+  case Id(v) => sys.error("unbound identifier: " + v)
+  case Add(l, r) => (evalcbn(l), evalcbn(r)) match {
+    case (Num(x), Num(y)) => Num(x + y)
+    case _ => sys.error("can only add numbers")
   }
-  case _ => e 
+  case App(f, a) => evalcbn(f) match {
+    case Fun(x, body) => evalcbn(subst(body, x, a)) // no evaluation of a!
+    case _ => sys.error("can only apply functions")
+  }
+  case _ => e
 }
 
 /* Does this change the semantics, or is it just an implementation detail?
  * In other words, is eval(e) == evalcbn(e) for all e ?
  * Let's try two former test cases.
  */
- 
-assert( evalcbn(test) == eval(test))
+
+assert(evalcbn(test) == eval(test))
 assert(evalcbn(test2) == eval(test2))
 
 /* One can formally prove that if eval and evalcbn both produce a number 
@@ -62,10 +62,10 @@ assert(evalcbn(test2) == eval(test2))
  *
  * Not necessarily. Consider: */
 
-val test3 = App(Fun('f,Fun('x,App('f,'x))),Add(1,2)) 
+val test3 = App(Fun('f, Fun('x, App('f, 'x))), Add(1, 2))
 
-assert(eval(test3) == Fun('x,App(Num(3),Id('x))))
-assert(evalcbn(test3) == Fun('x,App(Add(Num(1),Num(2)),Id('x))))
+assert(eval(test3) == Fun('x, App(Num(3), Id('x))))
+assert(evalcbn(test3) == Fun('x, App(Add(Num(1), Num(2)), Id('x))))
 
 /* However, if both produce a function, then the functions "behave" the same. 
  * More specifically, the function bodies produced by evalcbn may be 
@@ -77,7 +77,7 @@ assert(evalcbn(test3) == Fun('x,App(Add(Num(1),Num(2)),Id('x))))
  * Most importantly, however, eval and evalcbn differ with regard to their termination
  * behavior. We have seen that omega is a diverging expression. In eval, the term */
 
- val test4 = App(Fun('x,5),omega)
+val test4 = App(Fun('x, 5), omega)
 
 /* is hence also diverging. In contrast: */
 
@@ -92,36 +92,36 @@ assert(evalcbn(test4) == Num(5))
  * how to Church-encode them (see also lab-01.scala). Church-encoding can also
  * be done in FAE. Here is the one for lists: */
 val nil = Fun('c, Fun('e, 'e))
-val cons  = Fun('x, Fun('xs, Fun('c, Fun('e, App(App('c, 'x), App(App('xs, 'c),'e))))))
+val cons = Fun('x, Fun('xs, Fun('c, Fun('e, App(App('c, 'x), App(App('xs, 'c), 'e))))))
 /* For instance, the list 1,2,3 is encoded as: */
-val list123 = App(App('cons,1),App(App('cons,2),App(App('cons,3), 'nil)))
+val list123 = App(App('cons, 1), App(App('cons, 2), App(App('cons, 3), 'nil)))
 /* The map function on lists becomes :*/
-val maplist = Fun('f, Fun('l, App(App('l, Fun('x, Fun('xs, App(App('cons, App('f,'x)),'xs)))), 'nil)))
+val maplist = Fun('f, Fun('l, App(App('l, Fun('x, Fun('xs, App(App('cons, App('f, 'x)), 'xs)))), 'nil)))
 /* For instance, we can map the successor function over the 1,2,3 list. */
-val test5 = wth('cons,cons, 
-            wth('nil, nil, 
-            wth('maplist, maplist,
-            App(App('maplist, Fun('x, Add('x,1))), list123))))
+val test5 = wth('cons, cons,
+  wth('nil, nil,
+    wth('maplist, maplist,
+      App(App('maplist, Fun('x, Add('x, 1))), list123))))
 /* Since it is somewhat difficult to print out the resulting list in our primitive language
    we construct the result we expect explicitly. */
-val test5res = wth('cons,cons, 
-               wth('nil, nil, 
-                 App(App('cons,2),App(App('cons,3),App(App('cons,4), 'nil)))))
-assert(eval(test5) == eval(test5res))     
-/* Using evalcbn instead of eval the assertion does not hold (why?), but the results are beta-equivalent. */           
+val test5res = wth('cons, cons,
+  wth('nil, nil,
+    App(App('cons, 2), App(App('cons, 3), App(App('cons, 4), 'nil)))))
+assert(eval(test5) == eval(test5res))
+/* Using evalcbn instead of eval the assertion does not hold (why?), but the results are beta-equivalent. */
 
 /* We can also construct infinite lists. To this end, we need some form of recursion. We choose 
  * the standard fixed-point operator Y. This operator only works under call-by-name or other 
- * so-called "non-strict" evaluation strategies. */            
-val y = Fun('f, App(Fun('x,App('f, App('x,'x))), Fun('x,App('f,App('x,'x)))))
-/* Using Y, we can construct infinite lists, such as the list of all natural numbers. */ 
-val allnats = App(App('y, Fun('nats, Fun('n, App(App('cons,'n), App('nats, Add('n,1)))))),1)
+ * so-called "non-strict" evaluation strategies. */
+val y = Fun('f, App(Fun('x, App('f, App('x, 'x))), Fun('x, App('f, App('x, 'x)))))
+/* Using Y, we can construct infinite lists, such as the list of all natural numbers. */
+val allnats = App(App('y, Fun('nats, Fun('n, App(App('cons, 'n), App('nats, Add('n, 1)))))), 1)
 /* We can also perform standard computations on infinite lists, such as mapping the successor function over it. */
-val list2toinfty = wth('cons,cons, 
-                   wth('nil, nil, 
-                   wth('y, y, 
-                   wth('maplist, maplist,
-                      App(App('maplist, Fun('x, Add('x,1))), allnats)))))
+val list2toinfty = wth('cons, cons,
+  wth('nil, nil,
+    wth('y, y,
+      wth('maplist, maplist,
+        App(App('maplist, Fun('x, Add('x, 1))), allnats)))))
 /* Of course, list2toinfty diverges when we use eval, but it works fine with evalcbn. It is hard to verify the result
  * due to an almost unreadable output. Hence we propose the following 
  *
@@ -132,7 +132,7 @@ val list2toinfty = wth('cons,cons,
  *
  * -- end of extra material --
  */
- 
+
 /* Let us now consider the question how we can implement call-by-name in the environment-based interpreter.
  * Translating the idea of not evaluating the function argument to the environment-based version seems to 
  * suggest that the environment should map identifiers to expression instead of values.
@@ -161,37 +161,37 @@ val list2toinfty = wth('cons,cons,
  *       For instance, here: http://www.scala-lang.org/node/105
  */
 trait CBN {
-    type Thunk
-    
-    case class Env(map: Map[Symbol, Thunk]) {
-      def apply(key: Symbol) = map.apply(key)
-      def +(other: (Symbol, Thunk)) : Env = Env(map+other)
-    }
+  type Thunk
 
-    def delay(e: Exp, env: Env) : Thunk
-    def force(t: Thunk) : Value
+  case class Env(map: Map[Symbol, Thunk]) {
+    def apply(key: Symbol) = map.apply(key)
+    def +(other: (Symbol, Thunk)): Env = Env(map + other)
+  }
 
-    // since values also depend on Env and hence on Thunk they need to
-    // be defined within this trait    
-    sealed abstract class Value
-    case class NumV(n: Int) extends Value
-    case class ClosureV(f: Fun, env: Env) extends Value 
-    def eval(e: Exp, env: Env) : Value = e match {
-      case Id(x) => force(env(x)) // force evaluation of thunk if identifier is evaluated
-      case Add(l,r) => {
-        (eval(l,env), eval(r,env)) match {
-          case (NumV(v1),NumV(v2)) => NumV(v1+v2)
-          case _ => sys.error("can only add numbers")
-        }
+  def delay(e: Exp, env: Env): Thunk
+  def force(t: Thunk): Value
+
+  // since values also depend on Env and hence on Thunk they need to
+  // be defined within this trait    
+  sealed abstract class Value
+  case class NumV(n: Int) extends Value
+  case class ClosureV(f: Fun, env: Env) extends Value
+  def eval(e: Exp, env: Env): Value = e match {
+    case Id(x) => force(env(x)) // force evaluation of thunk if identifier is evaluated
+    case Add(l, r) => {
+      (eval(l, env), eval(r, env)) match {
+        case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
+        case _ => sys.error("can only add numbers")
       }
-      case App(f,a) => eval(f,env) match {
-        // delay argument expression and add it to environment of the closure
-        case ClosureV(f,cenv) => eval(f.body, cenv + (f.param -> delay(a,env)))
-        case _ => sys.error("can only apply functions")
-      }
-      case Num(n) => NumV(n)
-      case f@Fun(x,body) => ClosureV(f,env)
     }
+    case App(f, a) => eval(f, env) match {
+      // delay argument expression and add it to environment of the closure
+      case ClosureV(f, cenv) => eval(f.body, cenv + (f.param -> delay(a, env)))
+      case _ => sys.error("can only apply functions")
+    }
+    case Num(n) => NumV(n)
+    case f @ Fun(x, body) => ClosureV(f, env)
+  }
 }
 /* Let's now create an instance of CBN that corresponds to the substitution-based call-by-name
  * interpreter. A thunk is just a pair of expression and environment. Forcing a thunk just
@@ -200,13 +200,13 @@ trait CBN {
  * To understand what is going on during evaluation of tests we trace argument evaluation by a 
  * printout to the console.
  */
- 
+
 object CallByName extends CBN {
-  type Thunk = (Exp,Env)
-  def delay(e: Exp, env: Env) = (e,env)
+  type Thunk = (Exp, Env)
+  def delay(e: Exp, env: Env) = (e, env)
   def force(t: Thunk) = {
-    println("Forcing evaluation of expression: "+t._1)
-    eval(t._1,t._2)
+    println("Forcing evaluation of expression: " + t._1)
+    eval(t._1, t._2)
   }
 }
 
@@ -215,21 +215,21 @@ assert(CallByName.eval(test, CallByName.Env(Map.empty)) == CallByName.NumV(12))
  * ------------
  * Call-by-name is rather wasteful: If an argument is used n times in the body, the argument
  * expression is re-evaluated n-times. For instance, in */
-val cbntest = wth('double, Fun('x, Add('x,'x)),
-               App('double, Add(2,3)))
+val cbntest = wth('double, Fun('x, Add('x, 'x)),
+  App('double, Add(2, 3)))
 /* the sum of 2 and 3 is computed twice. 
  * If the argument is passed again to another function,
  * this may lead to an exponential blow-up.
  *
  * Example: */
 
-val blowup  = wth('a, Fun('x, Add('x,'x)),
-              wth('b, Fun('x, Add(App('a,'x), App('a,'x))),
-              wth('c, Fun('x, Add(App('b,'x), App('b,'x))),
-              wth('d, Fun('x, Add(App('c,'x), App('c,'x))),
-              wth('e, Fun('x, Add(App('d,'x), App('d,'x))),
-              wth('f, Fun('x, Add(App('e,'x), App('e,'x))),
-              App('f, Add(2,3))))))))
+val blowup = wth('a, Fun('x, Add('x, 'x)),
+  wth('b, Fun('x, Add(App('a, 'x), App('a, 'x))),
+    wth('c, Fun('x, Add(App('b, 'x), App('b, 'x))),
+      wth('d, Fun('x, Add(App('c, 'x), App('c, 'x))),
+        wth('e, Fun('x, Add(App('d, 'x), App('d, 'x))),
+          wth('f, Fun('x, Add(App('e, 'x), App('e, 'x))),
+            App('f, Add(2, 3))))))))
 /*
  * Can we do better? Yes, by caching the value
  * when the argument expression is evaluated for the first time. This evaluation strategy
@@ -238,17 +238,17 @@ val blowup  = wth('a, Fun('x, Add('x,'x)),
  * Caching is easy to implement in Scala:
  */
 
- object CallByNeed extends CBN {
+object CallByNeed extends CBN {
   case class MemoThunk(e: Exp, env: Env) {
     var cache: Value = null
   }
   type Thunk = MemoThunk
-  def delay(e: Exp, env: Env) = MemoThunk(e,env)
+  def delay(e: Exp, env: Env) = MemoThunk(e, env)
   def force(t: Thunk) = {
     if (t.cache == null) {
-      println("Forcing evaluation of expression: "+t.e)
+      println("Forcing evaluation of expression: " + t.e)
       t.cache = eval(t.e, t.env)
-    } else println ("Reusing cached value "+t.cache+" for expression "+t.e)
+    } else println("Reusing cached value " + t.cache + " for expression " + t.e)
     t.cache
   }
 }
@@ -272,5 +272,4 @@ val blowup  = wth('a, Fun('x, Add('x,'x)),
  - How can one simulate lazy evaluation in an eager language? 
    Basic idea: 'Lambda' as evaluation firewall.
  */
- 
 

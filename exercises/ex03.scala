@@ -52,7 +52,6 @@ c) Why did we not need closures in the environment-based F1WAE
 
 */
 
-
 /*
 2. If0 in Scala
 ===============
@@ -61,14 +60,13 @@ c) Why did we not need closures in the environment-based F1WAE
 // Let us implement `if0` through a function.
 
 def if0(
-  condition   : Int,
-  true_value  : Int,
-  false_value : Int
-) : Int = if (condition == 0) true_value else false_value
+  condition: Int,
+  true_value: Int,
+  false_value: Int): Int = if (condition == 0) true_value else false_value
 
 // Do not modify the factorial function!
 
-def factorial(n : Int) : Int = if0(n, 1, n * factorial(n - 1))
+def factorial(n: Int): Int = if0(n, 1, n * factorial(n - 1))
 
 // The call
 //
@@ -82,7 +80,6 @@ def factorial(n : Int) : Int = if0(n, 1, n * factorial(n - 1))
 ...
 */
 
-
 // b) Please modify _only_ the definition of the function `if0`
 //    so that `factorial(n)` computes n!.
 //
@@ -91,7 +88,6 @@ def factorial(n : Int) : Int = if0(n, 1, n * factorial(n - 1))
 //
 //          http://www.scala-lang.org/docu/files/ScalaReference.pdf
 
-
 // c) Test cases. Uncomment to execute.
 
 /*
@@ -99,7 +95,6 @@ assert(
 List(0, 1, 2, 3,  4,   5,   6,    7,     8,      9).map(factorial) ==
 List(1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880))
 */
-
 
 /*
 3. DIY infinite lists
@@ -121,63 +116,55 @@ List(1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880))
 */
 
 abstract class LazyList[T] {
-  def apply[R](nil : => R, cons : (T, => LazyList[T]) => R) : R
+  def apply[R](nil: => R, cons: (T, => LazyList[T]) => R): R
 
   // Inspired by Tobias Weber's solution to exercise sheet A
   override def toString = this(
     "Nil",
-    (head, tail) => "%s :: %s".format(head.toString, tail.toString)
-  )
+    (head, tail) => "%s :: %s".format(head.toString, tail.toString))
 }
 
 def nil[T] = new LazyList[T] {
-  def apply[R](nil_val : => R, cons : (T, => LazyList[T]) => R) = nil_val
+  def apply[R](nil_val: => R, cons: (T, => LazyList[T]) => R) = nil_val
 }
 
-def cons[T](head : T, tail : => LazyList[T]) = new LazyList[T] {
-  def apply[R](nil_val : => R, cons_function : (T, => LazyList[T]) => R)
-    = cons_function(head, tail)
+def cons[T](head: T, tail: => LazyList[T]) = new LazyList[T] {
+  def apply[R](nil_val: => R, cons_function: (T, => LazyList[T]) => R) = cons_function(head, tail)
 }
 
 val list1234 = cons(1, cons(2, cons(3, cons(4, nil[Int]))))
-
 
 // b) Write a `map` function that applies the first functional
 //    parameter `f` to each element of the second parameter `list`
 //    to produce a list of results.
 
-def map[T, R](f : T => R, list : LazyList[T]) : LazyList[R]
-  = sys.error("Implement me!")
+def map[T, R](f: T => R, list: LazyList[T]): LazyList[R] = sys.error("Implement me!")
 
 // A test. Uncomment to run.
 
 // assert(map[Int, Int](x => x * x, list1234).toString ==
 // "1 :: 4 :: 9 :: 16 :: Nil")
 
-
 // b) Write the `take` function that returns a lazy list
 //    consisting of the first `n` elements of the second
 //    argument.
 
-def take[T](n : Int, list : LazyList[T]) : LazyList[T]
-  = sys.error("Implement me!")
+def take[T](n: Int, list: LazyList[T]): LazyList[T] = sys.error("Implement me!")
 
-def ones : LazyList[Int] = cons(1, ones)
+def ones: LazyList[Int] = cons(1, ones)
 
 // Tests. Uncomment to run.
 
 // assert(take(5, ones).toString == "1 :: 1 :: 1 :: 1 :: 1 :: Nil")
 // assert(take(2, map[Int, Int](_ + 1, ones)).toString == "2 :: 2 :: Nil")
 
-
 // c) Implement `ints_from(n)` to return the infinite list
 //
 //      (n, n + 1, n + 2, ...)
 
-def ints_from(n : Int) : LazyList[Int] = sys.error("Implement me!")
+def ints_from(n: Int): LazyList[Int] = sys.error("Implement me!")
 
-def nats : LazyList[Int] = ints_from(1)
-
+def nats: LazyList[Int] = ints_from(1)
 
 // d) [Hard] Write the `zip_with` function that takes a function `f`
 //    and two lists as arguments and returns the list of results
@@ -185,61 +172,50 @@ def nats : LazyList[Int] = ints_from(1)
 //    two lists.
 
 def zip_with[S, T, R](
-  f      : (S, T) => R,
-  list_s : LazyList[S],
-  list_t : LazyList[T]
-) : LazyList[R] = sys.error("Implement me!")
+  f: (S, T) => R,
+  list_s: LazyList[S],
+  list_t: LazyList[T]): LazyList[R] = sys.error("Implement me!")
 
 // assert(take(10, zip_with[Int, Int, Int](_ * _, nats, nats)).toString ==
 // "1 :: 4 :: 9 :: 16 :: 25 :: 36 :: 49 :: 64 :: 81 :: 100 :: Nil")
 
-
 // e) Write the infinite list of factorials using `zipWith` and `nats`.
 
-def factorials : LazyList[Int]
-  = sys.error("Implement me!")
+def factorials: LazyList[Int] = sys.error("Implement me!")
 
 // assert(take(10, factorials).toString ==
 // "1 :: 1 :: 2 :: 6 :: 24 :: 120 :: 720 :: 5040 :: 40320 :: 362880 :: Nil")
 
-
 // f) Implement `is_empty`, which returns true if and only if
 //    its argument is an empty lazy list.
 
-def is_empty[T](list : LazyList[T]) : Boolean
-  = sys.error("Implement me!")
-
+def is_empty[T](list: LazyList[T]): Boolean = sys.error("Implement me!")
 
 // g) Write a function to compute the last element of a lazy
 //    list using `is_empty`.
 //
 //    Open problem: Is it possible to write `last` without `is_empty`?
 
-def last[T](list : LazyList[T]) : T
-  = list(
-      sys.error("Empty list has no last element"),
-      (head, tail) => if (is_empty(tail)) head else last(tail)
-    )
+def last[T](list: LazyList[T]): T = list(
+  sys.error("Empty list has no last element"),
+  (head, tail) => if (is_empty(tail)) head else last(tail))
 
 // assert(last(list1234) == 4)
-
 
 // g) Implement the `filter` function that returns a list
 //    of elements of the second argument that pass the test
 //    of the first argument.
 
-def filter[T](test : T => Boolean, list : LazyList[T]) : LazyList[T]
-  = sys.error("Implement me!")
+def filter[T](test: T => Boolean, list: LazyList[T]): LazyList[T] = sys.error("Implement me!")
 
 // assert(take(5, filter[Int](_ % 2 == 1, nats)).toString ==
 // "1 :: 3 :: 5 :: 7 :: 9 :: Nil")
-
 
 // h) Write down the infinite list of prime numbers.
 //    You saw a Haskell version briefly during the lecture
 //    on 01.11.2012.
 
-def primes : LazyList[Int] = sys.error("Implement me!")
+def primes: LazyList[Int] = sys.error("Implement me!")
 
 // assert(last(take(100, primes)) == 541)
 

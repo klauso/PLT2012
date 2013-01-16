@@ -19,14 +19,13 @@ trait Monad[A] {
   //
   // type M[A] = MyMonad[A]
 
-
   // Return
   // ======
   //
   // We force subclasses to implement a `return` method
   // inside a singleton object.
 
-  def mReturn[B](a: B) : M[B]
+  def mReturn[B](a: B): M[B]
 
   // The problem is, an instance of a particular monad class
   // is needed to invoke `mReturn`. For better user-friendliness,
@@ -37,15 +36,13 @@ trait Monad[A] {
   // def mReturn[B](a: B) : M[B] = new MyMonad(a)
   // def this(a: A) = this( /* implementation of `return` */ )
 
-
   // Bind
   // ====
   //
   // Let us rename `bind` to `flatMap` in order to take advantage of
   // Scala's do-notation, called "for-comprehension".
 
-  def mBind[B](f: A => M[B]) : M[B]
-
+  def mBind[B](f: A => M[B]): M[B]
 
   // Unimportant
   // ===========
@@ -53,11 +50,10 @@ trait Monad[A] {
   // `map` and `flatmap` are here to make Scala's do-notation, called
   // "for-comprehension", work. Subclasses should ignore it.
 
-  final def flatMap[B](f: A => M[B]) : M[B] = mBind(f)
-  final def map[B](f: A => B) : M[B] = flatMap(x => mReturn( f(x) ))
+  final def flatMap[B](f: A => M[B]): M[B] = mBind(f)
+  final def map[B](f: A => B): M[B] = flatMap(x => mReturn(f(x)))
 
 }
-
 
 // This is the Reader monad, abstracting the passing of
 // environments.
@@ -71,19 +67,16 @@ case class Reader[R, A](runReader: R => A) extends Monad[A] {
   type M[A] = Reader[R, A]
 
   def this(a: A) = this(_ => a)
-  def mReturn[B](a: B) : M[B] = new Reader(a)
+  def mReturn[B](a: B): M[B] = new Reader(a)
 
   def mBind[B](f: A => Reader[R, B]) = Reader[R, B](
-    r => f(this runReader r) runReader r
-  )
+    r => f(this runReader r) runReader r)
 
 }
-
 
 // Useful for getting the current environment.
 
 def askR[A] = Reader[A, A](identity)
-
 
 // Useful for changing the environment in a subcomputation,
 // but extremely awkward when used together with
@@ -94,11 +87,11 @@ def askR[A] = Reader[A, A](identity)
 
 // Environment-based WAE interpreter using the Reader monad
 
-abstract class Exp 
+abstract class Exp
 case class Num(n: Int) extends Exp
 case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Mul(lhs: Exp, rhs: Exp) extends Exp
-case class Id(x: Symbol) extends Exp 
+case class Id(x: Symbol) extends Exp
 case class With(x: Symbol, xdef: Exp, body: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def sym2exp(x: Symbol) = Id(x)
@@ -109,7 +102,7 @@ type Env = Map[Symbol, Int]
 // It has one field, `runReader`, whose meaning should be clear from
 // its type `Env => Int`.
 
-def eval(e: Exp) : Reader[Env, Int] = e match {
+def eval(e: Exp): Reader[Env, Int] = e match {
 
   case Num(n) => new Reader(n)
 
@@ -129,37 +122,36 @@ def eval(e: Exp) : Reader[Env, Int] = e match {
 
   case With(x, xdef, body) => for {
     env <- askR
-    xv  <- eval(xdef)
+    xv <- eval(xdef)
   } yield eval(body) runReader (env + (x -> xv))
 
 }
 
 // Tests from notes on WAE.
-val test1 = With('x, 5, Add('x,'x))
-val test2 = With('x, 5, Add('x, With('x, 3,10)))
-val test3 = With('x, 5, Add('x, With('x, 3,'x)))
-val test4 = With('x, 5, Add('x, With('y, 3,'x)))
+val test1 = With('x, 5, Add('x, 'x))
+val test2 = With('x, 5, Add('x, With('x, 3, 10)))
+val test3 = With('x, 5, Add('x, With('x, 3, 'x)))
+val test4 = With('x, 5, Add('x, With('y, 3, 'x)))
 
 def runTest(test: Exp) = eval(test) runReader Map()
 
 assert(runTest(test1) == 10)
 assert(runTest(test2) == 15)
-assert(runTest(test3) ==  8) 
+assert(runTest(test3) == 8)
 assert(runTest(test4) == 10)
-
 
 // A second example: transliteration of Haskell's Maybe monad
 
-object Maybe{
+object Maybe {
 
   sealed abstract class Maybe[A] extends Monad[A] {
     type M[A] = Maybe[A]
 
-    def mReturn[B](a: B) : M[B] = Just(a)
+    def mReturn[B](a: B): M[B] = Just(a)
 
-    def mBind[B](f: A => M[B]) : M[B] = this match {
+    def mBind[B](f: A => M[B]): M[B] = this match {
       case Nothing() => Nothing()
-      case Just(a)   => f(a)
+      case Just(a) => f(a)
     }
   }
 

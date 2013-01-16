@@ -7,7 +7,6 @@
  * Substitute lecture by Tillmann Rendel
  */
 
-  
 /* INTRODUCTION
  * ============
  *
@@ -84,11 +83,11 @@ object Syntax {
   case class Id(name: Symbol) extends Exp
   case class Add(lhs: Exp, rhs: Exp) extends Exp
   case class Fun(param: Symbol, body: Exp) extends Exp
-  case class App (funExpr: Exp, argExpr: Exp) extends Exp
+  case class App(funExpr: Exp, argExpr: Exp) extends Exp
 
   implicit def num2exp(n: Int) = Num(n)
   implicit def id2exp(s: Symbol) = Id(s)
-  def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x, body), xdef)
+  def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 }
 
 /* Examples
@@ -149,29 +148,29 @@ object Semantics {
   type Env = Map[Symbol, Value]
 
   abstract sealed class Value
-  case class Fun(f : Value => Value) extends Value
-  case class Num(n : Int) extends Value
+  case class Fun(f: Value => Value) extends Value
+  case class Num(n: Int) extends Value
 
-  def num(n : Int) : Domain =
-    (env : Env) => Num(n)
+  def num(n: Int): Domain =
+    (env: Env) => Num(n)
 
-  def id(x : Symbol) : Domain =
-    (env : Env) => env(x)
+  def id(x: Symbol): Domain =
+    (env: Env) => env(x)
 
-  def add(lhs : Domain, rhs : Domain) : Domain =
-    (env : Env) => (lhs(env), rhs(env)) match {
+  def add(lhs: Domain, rhs: Domain): Domain =
+    (env: Env) => (lhs(env), rhs(env)) match {
       case (Num(n1), Num(n2)) => Num(n1 + n2)
       case _ => sys.error("not happy")
     }
 
-  def app(fun : Domain, arg : Domain) : Domain =
-    (env : Env) => fun(env) match {
+  def app(fun: Domain, arg: Domain): Domain =
+    (env: Env) => fun(env) match {
       case Fun(f) => f(arg(env))
       case _ => sys.error("not happy")
     }
- 
-  def fun(x : Symbol, body : Domain) : Domain =
-    (env : Env) => Fun(arg => body(env + (x -> arg)))
+
+  def fun(x: Symbol, body: Domain): Domain =
+    (env: Env) => Fun(arg => body(env + (x -> arg)))
 }
 
 /* EVALUATION
@@ -183,7 +182,7 @@ object Semantics {
  */
 
 object Evaluation {
-  def eval(e : Syntax.Exp) : Semantics.Domain =
+  def eval(e: Syntax.Exp): Semantics.Domain =
     e match {
       case Syntax.Num(n) => Semantics.num(n)
       case Syntax.Id(x) => Semantics.id(x)
@@ -218,17 +217,17 @@ object Semantics2 {
   type Env = Map[Symbol, Value]
 
   abstract class Value
-  case class Fun(f : Value => Value) extends Value
-  case class Num(n : Int) extends Value
+  case class Fun(f: Value => Value) extends Value
+  case class Num(n: Int) extends Value
 
   // Three new case classes for symbolic values:
-  case class Id(x : Symbol) extends Value
-  case class Add(lhs : Value, rhs : Value) extends Value
-  case class App(fun : Value, arg : Value) extends Value
+  case class Id(x: Symbol) extends Value
+  case class Add(lhs: Value, rhs: Value) extends Value
+  case class App(fun: Value, arg: Value) extends Value
 
   // A new helper function to decide whether a value
   // could mean a number
-  def canBeNumber(v : Value) : Boolean = v match {
+  def canBeNumber(v: Value): Boolean = v match {
     case Fun(_) => false
     case Num(_) => true
     case Id(_) => true
@@ -238,7 +237,7 @@ object Semantics2 {
 
   // A new helper function to decide whether a value
   // could mean a function
-  def canBeFunction(v : Value) : Boolean = v match {
+  def canBeFunction(v: Value): Boolean = v match {
     case Fun(_) => true
     case Num(_) => false
     case Id(_) => true
@@ -246,30 +245,30 @@ object Semantics2 {
     case App(_, _) => true
   }
 
-  def num(n : Int) : Domain =
-    (env : Env) => Num(n)
+  def num(n: Int): Domain =
+    (env: Env) => Num(n)
 
-  def id(x : Symbol) : Domain =
-    (env : Env) => env(x)
+  def id(x: Symbol): Domain =
+    (env: Env) => env(x)
 
-  def add(lhs : Domain, rhs : Domain) : Domain =
-    (env : Env) => (lhs(env), rhs(env)) match {
+  def add(lhs: Domain, rhs: Domain): Domain =
+    (env: Env) => (lhs(env), rhs(env)) match {
       case (Num(n1), Num(n2)) => Num(n1 + n2)
       // new case for symbolic addition:
       case (val1, val2) if canBeNumber(val1) && canBeNumber(val2) => Add(val1, val2)
       case _ => sys.error("not happy")
     }
 
-  def app(fun : Domain, arg : Domain) : Domain =
-    (env : Env) => fun(env) match {
+  def app(fun: Domain, arg: Domain): Domain =
+    (env: Env) => fun(env) match {
       case Fun(f) => f(arg(env))
       // new case for symbolic application:
       case (funVal) if canBeFunction(funVal) => App(funVal, arg(env))
       case _ => sys.error("not happy")
     }
- 
-  def fun(x : Symbol, body : Domain) : Domain =
-    (env : Env) => Fun(arg => body(env + (x -> arg)))
+
+  def fun(x: Symbol, body: Domain): Domain =
+    (env: Env) => Fun(arg => body(env + (x -> arg)))
 }
 
 /* This enhanced semantic structure is still suitable for
@@ -278,7 +277,7 @@ object Semantics2 {
  */
 
 object Evaluation2 {
-  def eval(e : Syntax.Exp) : Semantics2.Domain =
+  def eval(e: Syntax.Exp): Semantics2.Domain =
     e match {
       case Syntax.Num(n) => Semantics2.num(n)
       case Syntax.Id(x) => Semantics2.id(x)
@@ -304,12 +303,12 @@ object Evaluation2 {
 object Reification {
   var i = 0
 
-  def fresh() : Symbol = {
+  def fresh(): Symbol = {
     i += 1
     Symbol("x" + i)
   }
 
-  def reify(v : Semantics2.Value) : Syntax.Exp = v match {
+  def reify(v: Semantics2.Value): Syntax.Exp = v match {
     case Semantics2.Id(name) => Syntax.Id(name)
     case Semantics2.Num(n) => Syntax.Num(n)
     case Semantics2.Add(lhs, rhs) => Syntax.Add(reify(lhs), reify(rhs))
@@ -325,7 +324,7 @@ object Reification {
 /* Going from syntax to semantics and back is normalization.
  */
 
-def norm(e : Syntax.Exp) : Syntax.Exp =
+def norm(e: Syntax.Exp): Syntax.Exp =
   Reification.reify(Evaluation2.eval(e)(Map()))
 
 /* Some tests.

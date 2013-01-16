@@ -24,7 +24,6 @@ Contents
 1. Implementing RCFAE in FAE
 */
 
-
 /*
 1. Implementing RCFAE in FAE
 ============================
@@ -43,10 +42,10 @@ case class If0(cond: Exp, thenExp: Exp, elseExp: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
 
 // The syntax sugar `wth` may eventually prove useful.
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
 sealed abstract class Value
 type Env = Map[Symbol, Value]
@@ -57,33 +56,31 @@ case class ClosureV(f: Fun, env: Env) extends Value
 // in lecture notes. The only change is to handle Mul- and If0-
 // expressions, which should contain no surprise.
 
-def eval(e: Exp, env: Env = Map()) : Value = e match {
+def eval(e: Exp, env: Env = Map()): Value = e match {
   case Num(n: Int) => NumV(n)
   case Id(x) => env(x)
-  case If0(cond, thenExp, elseExp) => eval(cond,env) match {
-    case NumV(0) => eval(thenExp,env)
-    case _ => eval(elseExp,env)
-  }    
-  case Add(l,r) => {
-    (eval(l,env), eval(r,env)) match {
-      case (NumV(v1),NumV(v2)) => NumV(v1+v2)
+  case If0(cond, thenExp, elseExp) => eval(cond, env) match {
+    case NumV(0) => eval(thenExp, env)
+    case _ => eval(elseExp, env)
+  }
+  case Add(l, r) => {
+    (eval(l, env), eval(r, env)) match {
+      case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
       case _ => sys.error("can only add numbers")
     }
   }
-  case Mul(l,r) => {
-    (eval(l,env), eval(r,env)) match {
-      case (NumV(v1),NumV(v2)) => NumV(v1*v2)
+  case Mul(l, r) => {
+    (eval(l, env), eval(r, env)) match {
+      case (NumV(v1), NumV(v2)) => NumV(v1 * v2)
       case _ => sys.error("can only multiply numbers")
     }
   }
-  case f@Fun(param,body) => ClosureV(f, env)
-  case App(f,a) => eval(f,env) match {
-    case ClosureV(f,closureEnv)
-      => eval(f.body, closureEnv + (f.param -> eval(a,env)))
+  case f @ Fun(param, body) => ClosureV(f, env)
+  case App(f, a) => eval(f, env) match {
+    case ClosureV(f, closureEnv) => eval(f.body, closureEnv + (f.param -> eval(a, env)))
     case _ => sys.error("can only apply functions")
   }
 }
-
 
 // DEFINITIONS
 //
@@ -107,7 +104,6 @@ def eval(e: Exp, env: Env = Map()) : Value = e match {
 // if they have the same constructor and all their subterms are
 // eta-equivalent.
 
-
 // a) Observe the Z-combinator below.
 //    Prove that for every Fun-expression f, the value of (Z f) is
 //    eta-equivalent to f (Z f).
@@ -128,10 +124,8 @@ def eval(e: Exp, env: Env = Map()) : Value = e match {
 
 val Z =
   Fun('f, App(
-    Fun( 'x, App('f, Fun('y, App(App('x, 'x), 'y)))),
-    Fun( 'x, App('f, Fun('y, App(App('x, 'x), 'y))))
-  ))
-
+    Fun('x, App('f, Fun('y, App(App('x, 'x), 'y)))),
+    Fun('x, App('f, Fun('y, App(App('x, 'x), 'y))))))
 
 // b) Prove that if a function f is a fixed point of the higher-order
 //    function phi_of_factorial below, then (f n) computes the
@@ -150,7 +144,6 @@ val Z =
 val phi_of_factorial =
   Fun('f, Fun('x, If0('x, 1, Mul('x, App('f, Add('x, -1))))))
 
-
 // c) Given a) and b), write down the factorial function as a FAE
 // term.
 
@@ -167,11 +160,8 @@ List(0, 1, 2, 3,  4,   5,   6,    7,     8,      9).map(call_fact) ==
 List(1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880))
 */
 
-
 // d) Write down a FAE term `fib` such that (fib n) computes the nth
 //    fibonnacci number.
-
-
 
 // A test. Uncomment to run.
 
@@ -184,11 +174,9 @@ List(0, 1, 2, 3, 4, 5,  6,  7,  8,  9).map(call_fib) ==
 List(1, 1, 2, 3, 5, 8, 13, 21, 34, 55))
 */
 
-
 // e) Write down letrec as syntactic sugar of FAE.
 
-def letrec(x: Symbol, xdef: Exp, body: Exp) : Exp
-  = sys.error("Implement me!")
+def letrec(x: Symbol, xdef: Exp, body: Exp): Exp = sys.error("Implement me!")
 
 // A test. Uncomment to run.
 

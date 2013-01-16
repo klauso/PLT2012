@@ -9,7 +9,6 @@ Please comment/correct/improve these notes via github. Proposals or questions ca
 be submitted as an "issue"; proposals for corrections/extensions/improvements can
 be submitted as a "pull request". You can of course also send an email to Klaus Ostermann */
 
-
 /* F1-WAE, the language with first-order functions, lets us abstract over patterns
  * that involve numbers. But what if we want to abstract over patterns that
  * involve functions, such as the "list fold" pattern, whose instantiations
@@ -41,7 +40,6 @@ be submitted as a "pull request". You can of course also send an email to Klaus 
  * language constructs: Function abstraction and function application. 
  */
 
- 
 sealed abstract class Exp
 case class Num(n: Int) extends Exp
 case class Id(name: Symbol) extends Exp
@@ -49,9 +47,9 @@ case class Add(lhs: Exp, rhs: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 
-/* Both function definitions and applications are expressions. */ 
+/* Both function definitions and applications are expressions. */
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
 
 /* Due to the lambda calculus, the concrete syntax for function abstraction is
  * often written with a lambda, such as "lambda x. x+3", thus also called lambda
@@ -69,26 +67,26 @@ case class App (funExpr: Exp, argExpr: Exp) extends Exp
  * We make this idea explicit by giving a constructive translation. Such translations
  * are also often called "desugaring".
  */
- 
- // "with" would be a better name for this function, but it is reserved in Scala
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+
+// "with" would be a better name for this function, but it is reserved in Scala
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
 /* Like for F1WAE, we will at first define the meaning of FAE in terms of
  * substitution. Here is the substitution function for FAE. */
- 
-def subst(e1 : Exp, x: Symbol, e2: Exp) : Exp = e1 match {
+
+def subst(e1: Exp, x: Symbol, e2: Exp): Exp = e1 match {
   case Num(n) => e1
-  case Add(l,r) => Add(subst(l,x,e2), subst(r,x,e2))
+  case Add(l, r) => Add(subst(l, x, e2), subst(r, x, e2))
   case Id(y) => if (x == y) e2 else Id(y)
-  case App(f,a) => App(subst(f,x,e2),subst(a,x,e2))
-  case Fun(param,body) => 
-    if (param == x) e1  else Fun(param, subst(body, x, e2))
+  case App(f, a) => App(subst(f, x, e2), subst(a, x, e2))
+  case Fun(param, body) =>
+    if (param == x) e1 else Fun(param, subst(body, x, e2))
 }
 
 /* Let's try whether subst produces reasonable results. */
-assert( subst(Add(5,'x), 'x, 7) == Add(5, 7))
-assert( subst(Add(5,'x), 'y, 7) == Add(5,'x))
-assert( subst(Fun('x, Add('x,'y)), 'x, 7) == Fun('x, Add('x,'y)))
+assert(subst(Add(5, 'x), 'x, 7) == Add(5, 7))
+assert(subst(Add(5, 'x), 'y, 7) == Add(5, 'x))
+assert(subst(Fun('x, Add('x, 'y)), 'x, 7) == Fun('x, Add('x, 'y)))
 
 /* However, what happens if e2 contains free variables? The danger
  * here is that they may be accidentially "captured" by the substitution.
@@ -117,43 +115,43 @@ assert( subst(Fun('x, Add('x,'y)), 'x, 7) == Fun('x, Add('x,'y)))
  *
  * Let's do this step by step.
  */
- 
-def freshName(names: Set[Symbol], default: Symbol) : Symbol = {
-  var last : Int = 0
-  var freshName = default  
-  while (names contains freshName) { freshName = Symbol(default.name+last.toString); last += 1; }
+
+def freshName(names: Set[Symbol], default: Symbol): Symbol = {
+  var last: Int = 0
+  var freshName = default
+  while (names contains freshName) { freshName = Symbol(default.name + last.toString); last += 1; }
   freshName
 }
 
-assert( freshName(Set('y,'z),'x) == 'x)
-assert( freshName(Set('x2,'x0,'x4,'x,'x1),'x) == 'x3)
+assert(freshName(Set('y, 'z), 'x) == 'x)
+assert(freshName(Set('x2, 'x0, 'x4, 'x, 'x1), 'x) == 'x3)
 
-def freeVars(e: Exp) : Set[Symbol] =  e match {
-   case Id(x) => Set(x)
-   case Add(l,r) => freeVars(l) ++ freeVars(r)
-   case Fun(x,body) => freeVars(body) - x
-   case App(f,a) => freeVars(f) ++ freeVars(a)
-   case Num(n) => Set.empty
+def freeVars(e: Exp): Set[Symbol] = e match {
+  case Id(x) => Set(x)
+  case Add(l, r) => freeVars(l) ++ freeVars(r)
+  case Fun(x, body) => freeVars(body) - x
+  case App(f, a) => freeVars(f) ++ freeVars(a)
+  case Num(n) => Set.empty
 }
-assert(freeVars(Fun('x,Add('x,'y))) == Set('y))
+assert(freeVars(Fun('x, Add('x, 'y))) == Set('y))
 
-def subst(e1 : Exp, x: Symbol, e2: Exp) : Exp = e1 match {
+def subst(e1: Exp, x: Symbol, e2: Exp): Exp = e1 match {
   case Num(n) => e1
-  case Add(l,r) => Add(subst(l,x,e2), subst(r,x,e2))
+  case Add(l, r) => Add(subst(l, x, e2), subst(r, x, e2))
   case Id(y) => if (x == y) e2 else Id(y)
-  case App(f,a) => App(subst(f,x,e2),subst(a,x,e2))
-  case Fun(param,body) => 
+  case App(f, a) => App(subst(f, x, e2), subst(a, x, e2))
+  case Fun(param, body) =>
     if (param == x) e1 else {
       val newvar = freshName(freeVars(e2), param)
       Fun(newvar, subst(subst(body, param, Id(newvar)), x, e2))
-    }                            
+    }
 }
 
-assert( subst(Add(5,'x), 'x, 7) == Add(5, 7))
-assert( subst(Add(5,'x), 'y, 7) == Add(5,'x))
-assert( subst(Fun('x, Add('x,'y)), 'x, 7) == Fun('x, Add('x,'y)))
+assert(subst(Add(5, 'x), 'x, 7) == Add(5, 7))
+assert(subst(Add(5, 'x), 'y, 7) == Add(5, 'x))
+assert(subst(Fun('x, Add('x, 'y)), 'x, 7) == Fun('x, Add('x, 'y)))
 // test capture-avoiding substitution
-assert( subst(Fun('x, Add('x,'y)), 'y, Add('x,5)) == Fun('x0,Add(Id('x0),Add(Id('x),Num(5)))))
+assert(subst(Fun('x, Add('x, 'y)), 'y, Add('x, 5)) == Fun('x0, Add(Id('x0), Add(Id('x), Num(5)))))
 
 /* OK, equipped with this new version of substitution we can now define the interpreter
  * for this language.
@@ -174,46 +172,46 @@ assert( subst(Fun('x, Add('x,'y)), 'y, Add('x,5)) == Fun('x0,Add(Id('x0),Add(Id(
  *
  * The remainder of the interpreter is unsurprising. 
  */
-def eval(e: Exp) : Exp = e match {
-  case Id(v) => sys.error("unbound identifier: "+v)
-  case Add(l,r) => (eval(l), eval(r)) match {
-                     case (Num(x),Num(y)) => Num(x+y)
-                     case _ => sys.error("can only add numbers")
-                    }
-  case App(f,a) => eval(f) match {
-     case Fun(x,body) => eval( subst(body,x, eval(a)))
-     case _ => sys.error("can only apply functions")
+def eval(e: Exp): Exp = e match {
+  case Id(v) => sys.error("unbound identifier: " + v)
+  case Add(l, r) => (eval(l), eval(r)) match {
+    case (Num(x), Num(y)) => Num(x + y)
+    case _ => sys.error("can only add numbers")
+  }
+  case App(f, a) => eval(f) match {
+    case Fun(x, body) => eval(subst(body, x, eval(a)))
+    case _ => sys.error("can only apply functions")
   }
   case _ => e // numbers and functions evaluate to themselves
 }
 
 /* We can also make the return type more precise to verify the invariant 
  * that numbers and functions are the only values. */
-def eval2(e: Exp) : Either[Num,Fun] = e match {
-  case Id(v) => sys.error("unbound identifier: "+v)
-  case Add(l,r) => (eval2(l), eval2(r)) match {
-                     case (Left(Num(x)),Left(Num(y))) => Left(Num(x+y))
-                     case _ => sys.error("can only add numbers")
-                    }
-  case App(f,a) => eval2(f) match {
-     case Right(Fun(x,body)) => eval2( subst(body,x, eval(a)))
-     case _ => sys.error("can only apply functions")
+def eval2(e: Exp): Either[Num, Fun] = e match {
+  case Id(v) => sys.error("unbound identifier: " + v)
+  case Add(l, r) => (eval2(l), eval2(r)) match {
+    case (Left(Num(x)), Left(Num(y))) => Left(Num(x + y))
+    case _ => sys.error("can only add numbers")
   }
-  case f@Fun(_,_) => Right(f) 
-  case n@Num(_) => Left(n)
+  case App(f, a) => eval2(f) match {
+    case Right(Fun(x, body)) => eval2(subst(body, x, eval(a)))
+    case _ => sys.error("can only apply functions")
+  }
+  case f @ Fun(_, _) => Right(f)
+  case n @ Num(_) => Left(n)
 }
 
 /* Let's test. 
  * Exercise: Add more interesting test cases.
  */
-val test = App( Fun('x,Add('x,5)), 7)
+val test = App(Fun('x, Add('x, 5)), 7)
 
-assert( eval(test) == Num(12))
+assert(eval(test) == Num(12))
 
 /* FAE is a computationally (Turing)-complete language. For instance, we can define 
  * a non-terminating program. This program is commonly called Omega */
- 
-val omega = App(Fun('x,App('x,'x)), Fun('x,App('x,'x)))
+
+val omega = App(Fun('x, App('x, 'x)), Fun('x, App('x, 'x)))
 
 // try eval(omega) to crash the interpreter ;-)
 
@@ -227,25 +225,25 @@ val omega = App(Fun('x,App('x,'x)), Fun('x,App('x,'x)))
  */
 type Env0 = Map[Symbol, Exp]
 
-def evalWithEnv0(e: Exp, env: Env0) : Exp = e match {
+def evalWithEnv0(e: Exp, env: Env0): Exp = e match {
   case Id(x) => env(x)
-  case Add(l,r) => {
-    (evalWithEnv0(l,env), evalWithEnv0(r,env)) match {
-      case (Num(v1),Num(v2)) => Num(v1+v2)
+  case Add(l, r) => {
+    (evalWithEnv0(l, env), evalWithEnv0(r, env)) match {
+      case (Num(v1), Num(v2)) => Num(v1 + v2)
       case _ => sys.error("can only add numbers")
     }
   }
-  case App(f,a) => evalWithEnv0(f,env) match {
-    case Fun(x,body) => evalWithEnv0(body, Map(x -> evalWithEnv0(a,env)))
+  case App(f, a) => evalWithEnv0(f, env) match {
+    case Fun(x, body) => evalWithEnv0(body, Map(x -> evalWithEnv0(a, env)))
     case _ => sys.error("can only apply functions")
   }
   case _ => e // numbers and functions evaluate to themselves 
 }
 
-assert( evalWithEnv0(test, Map.empty) == Num(12))
+assert(evalWithEnv0(test, Map.empty) == Num(12))
 
-/* However, consider the following example. */ 
-val test2 = wth('x, 5, App(Fun('f, App('f,3)), Fun('y,Add('x,'y))))
+/* However, consider the following example. */
+val test2 = wth('x, 5, App(Fun('f, App('f, 3)), Fun('y, Add('x, 'y))))
 
 /* It works fine in the substitution-based interpreter. */
 assert(eval(test2) == Num(8))
@@ -272,7 +270,7 @@ assert(eval(test2) == Num(8))
  * Since closures are not expressible in the language syntax, we now come to the point where
  * we need a separate category of _values_. The values in FAE can be either numbers or closures. 
  */
- 
+
 sealed abstract class Value
 type Env = Map[Symbol, Value]
 case class NumV(n: Int) extends Value
@@ -280,21 +278,21 @@ case class ClosureV(f: Fun, env: Env) extends Value
 
 /* The evaluator becomes :*/
 
-def evalWithEnv(e: Exp, env: Env) : Value = e match {
+def evalWithEnv(e: Exp, env: Env): Value = e match {
   case Num(n: Int) => NumV(n)
   case Id(x) => env(x)
-  case Add(l,r) => {
-    (evalWithEnv(l,env), evalWithEnv(r,env)) match {
-      case (NumV(v1),NumV(v2)) => NumV(v1+v2)
+  case Add(l, r) => {
+    (evalWithEnv(l, env), evalWithEnv(r, env)) match {
+      case (NumV(v1), NumV(v2)) => NumV(v1 + v2)
       case _ => sys.error("can only add numbers")
     }
   }
-  case f@Fun(param,body) => ClosureV(f, env)
-  case App(f,a) => evalWithEnv(f,env) match {
+  case f @ Fun(param, body) => ClosureV(f, env)
+  case App(f, a) => evalWithEnv(f, env) match {
     // Use environment stored in closure to realize proper lexical scoping!
-    case ClosureV(f,closureEnv) => evalWithEnv(f.body, closureEnv + (f.param -> evalWithEnv(a,env)))
+    case ClosureV(f, closureEnv) => evalWithEnv(f.body, closureEnv + (f.param -> evalWithEnv(a, env)))
     case _ => sys.error("can only apply functions")
   }
 }
-assert( evalWithEnv(test, Map.empty) == NumV(12))
-assert( evalWithEnv(test2,Map.empty) == NumV(8))
+assert(evalWithEnv(test, Map.empty) == NumV(12))
+assert(evalWithEnv(test2, Map.empty) == NumV(8))

@@ -38,8 +38,8 @@ case class If0(cond: Exp, thenExp: Exp, elseExp: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
 case class Fun(param: Symbol, body: Exp) extends Exp
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
-def wth(x: Symbol, xdef: Exp, body: Exp) : Exp = App(Fun(x,body),xdef)
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
+def wth(x: Symbol, xdef: Exp, body: Exp): Exp = App(Fun(x, body), xdef)
 
 /* To add mutation to FAE, we add four language constructs: */
 
@@ -50,10 +50,10 @@ case class Seq(e1: Exp, e2: Exp) extends Exp // sequencing of expressions
 
 /* In this new language, the following sample program */
 
-val test1 = wth('b, NewBox(0), 
-              Seq(
-                SetBox('b, Add(1, OpenBox('b))), 
-                OpenBox('b)))
+val test1 = wth('b, NewBox(0),
+  Seq(
+    SetBox('b, Add(1, OpenBox('b))),
+    OpenBox('b)))
 
 /* should give as result 1 in a proper implementation. */
 
@@ -82,9 +82,9 @@ val test1 = wth('b, NewBox(0),
  */
 
 val test2 = wth('a, NewBox(1),
-              wth('f, Fun('x, Add('x, OpenBox('a))),
-                Seq(SetBox('a,2),
-                  App('f, 5))))
+  wth('f, Fun('x, Add('x, OpenBox('a))),
+    Seq(SetBox('a, 2),
+      App('f, 5))))
 
 /* The mutation should affect the box stored in the closure bound to
  * f.  But with the implementation strategy described above it would
@@ -139,7 +139,7 @@ type Store = Map[Address, Value]
 
 var _nextAddress = 0
 
-def nextAddress : Address = {
+def nextAddress: Address = {
   _nextAddress += 1
   _nextAddress
 }
@@ -154,10 +154,10 @@ def nextAddress : Address = {
  */
 
 val test3 = wth('switch, NewBox(0),
-             wth('toggle, Fun('dummy, If0(OpenBox('switch),
-                                          Seq(SetBox('switch, 1), 1),
-                                          Seq(SetBox('switch, 0), 0))),
-                 Add(App('toggle,42), App('toggle,42))))
+  wth('toggle, Fun('dummy, If0(OpenBox('switch),
+    Seq(SetBox('switch, 1), 1),
+    Seq(SetBox('switch, 0), 0))),
+    Add(App('toggle, 42), App('toggle, 42))))
 
 /* This program should return 1.
  * Let's discuss on the blackboard what the environment and store
@@ -181,61 +181,52 @@ F         Add(0,1)              1
  * evaluator.
  */
 
-def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
+def eval(e: Exp, env: Env, s: Store): (Value, Store) = e match {
   /* All expressions whose evaluation does not alter the store just
    * return s.
    */
   case Num(n) => (NumV(n), s)
   case Id(x) => (env(x), s)
-  case f@Fun(_, _) => (ClosureV(f, env), s)
+  case f @ Fun(_, _) => (ClosureV(f, env), s)
   /* In recursive cases we have to thread the store through the
    * evaluation. In particular, we define the order of evaluation
    * explicitly through data flow dependencies.
    */
-  case If0(cond, thenExp, elseExp)
-    => eval(cond, env, s) match {
-         case (NumV(0), s1) => eval(thenExp, env, s1)
-         case (_, s1)       => eval(elseExp, env, s1)
+  case If0(cond, thenExp, elseExp) => eval(cond, env, s) match {
+    case (NumV(0), s1) => eval(thenExp, env, s1)
+    case (_, s1) => eval(elseExp, env, s1)
 
-         /* An alternative that enfoces runtime type-correctness of
+    /* An alternative that enfoces runtime type-correctness of
           * the conditional expression:
 
          case (NumV(_), s1) => eval(elseExp, env, s1)
          case _             => sys.error("can only test if a number is 0")
 
           */
-       }
+  }
 
-  case Add(l, r)
-    => eval(l, env, s) match {
-         case (NumV(v1), s1)
-           => eval(r, env, s1) match {
-                case (NumV(v2), s2) => (NumV(v1 + v2), s2)
-                case _ => sys.error("can only add numbers")
-              }
-         case _
-           => sys.error("can only add numbers")
-       }
+  case Add(l, r) => eval(l, env, s) match {
+    case (NumV(v1), s1) => eval(r, env, s1) match {
+      case (NumV(v2), s2) => (NumV(v1 + v2), s2)
+      case _ => sys.error("can only add numbers")
+    }
+    case _ => sys.error("can only add numbers")
+  }
 
-  case Mul(l, r)
-    => eval(l, env, s) match {
-         case (NumV(v1), s1)
-           => eval(r, env, s1) match {
-                case (NumV(v2), s2) => (NumV(v1 * v2), s2)
-                case _ => sys.error("can only multiply numbers")
-              }
-         case _ => sys.error("can only multiply numbers")
-       }
+  case Mul(l, r) => eval(l, env, s) match {
+    case (NumV(v1), s1) => eval(r, env, s1) match {
+      case (NumV(v2), s2) => (NumV(v1 * v2), s2)
+      case _ => sys.error("can only multiply numbers")
+    }
+    case _ => sys.error("can only multiply numbers")
+  }
 
-  case App(f, a)
-    => eval(f, env, s) match {
-         case (ClosureV(f, closureEnv), s1)
-           => eval(a, env, s1) match {
-                case (av, s2)
-                  => eval(f.body, closureEnv + (f.param -> av), s2)
-              }
-         case _ => sys.error("can only apply functions")
-       }
+  case App(f, a) => eval(f, env, s) match {
+    case (ClosureV(f, closureEnv), s1) => eval(a, env, s1) match {
+      case (av, s2) => eval(f.body, closureEnv + (f.param -> av), s2)
+    }
+    case _ => sys.error("can only apply functions")
+  }
 
   /* In a sequence, we ignore the result of evaluating e1 but not its
    * effect on the store.
@@ -245,35 +236,31 @@ def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
   /* A new box is created by putting it into the store at a new
    * address.
    */
-  case NewBox(e: Exp)
-    => eval(e, env, s) match {
-         case (v, s1) => {
-           val a = nextAddress
-           (AddressV(a), s1 + (a -> v))
-         }
-       }
+  case NewBox(e: Exp) => eval(e, env, s) match {
+    case (v, s1) => {
+      val a = nextAddress
+      (AddressV(a), s1 + (a -> v))
+    }
+  }
 
   /* Setting a box is now a two-step process: First evaluate b to an
    * address, then lookup and update the value associated to the
    * address in the store. Note that "updated" is a functional method.
    */
-  case SetBox(b: Exp, e: Exp)
-    => eval(b, env, s) match {
-         case (AddressV(a), s1)
-           => eval(e, env, s1) match {
-                case (ev, s2) => (ev, s2.updated(a, ev))
-              }
-         case _ => sys.error("can only set boxes")
-       }
+  case SetBox(b: Exp, e: Exp) => eval(b, env, s) match {
+    case (AddressV(a), s1) => eval(e, env, s1) match {
+      case (ev, s2) => (ev, s2.updated(a, ev))
+    }
+    case _ => sys.error("can only set boxes")
+  }
 
   /* OpenBox uses the same two-step process but does not update the
    * store.
    */
-  case OpenBox(b: Exp)
-    => eval(b, env, s) match {
-         case (AddressV(a), s1) => (s1(a), s1)
-         case _                 => sys.error("can only open boxes")
-       }
+  case OpenBox(b: Exp) => eval(b, env, s) match {
+    case (AddressV(a), s1) => (s1(a), s1)
+    case _ => sys.error("can only open boxes")
+  }
 }
 
 /* From an implementation point of view, our interpreter has the
@@ -289,34 +276,33 @@ def eval(e: Exp, env: Env, s: Store) : (Value, Store) = e match {
  * model a (naive) mark-and-sweep garbage collector as follows:
  */
 
-def gc(env: Env, store:Store) : Store = {
+def gc(env: Env, store: Store): Store = {
 
-  def allAddrInVal(v: Value) : Set[Address] = v match {
-    case AddressV(a)      => Set(a)
-    case NumV(_)          => Set.empty
+  def allAddrInVal(v: Value): Set[Address] = v match {
+    case AddressV(a) => Set(a)
+    case NumV(_) => Set.empty
     case ClosureV(f, env) => allAddrInEnv(env)
   }
 
-  def allAddrInEnv(env: Env) : Set[Address] =
+  def allAddrInEnv(env: Env): Set[Address] =
     env.values.map(allAddrInVal _).fold(Set.empty)(_ union _)
 
-  def mark(seed: Set[Address]) : Set[Address] = {
+  def mark(seed: Set[Address]): Set[Address] = {
     val newAddresses = seed.flatMap(ad => allAddrInVal(store(ad)))
     if (newAddresses.subsetOf(seed)) seed
     else mark(seed union newAddresses)
   }
 
   val marked = mark(allAddrInEnv(env)) // mark ...
-  store.filterKeys(marked(_))           // and sweep!
+  store.filterKeys(marked(_)) // and sweep!
 }
 
 val teststore = Map(
-  6  -> NumV(42),
-  7  -> NumV(6),
-  8  -> AddressV(6),
-  9  -> AddressV(7),
-  10 -> ClosureV(Fun('x, 'y), Map('y -> AddressV(8)))
-)
+  6 -> NumV(42),
+  7 -> NumV(6),
+  8 -> AddressV(6),
+  9 -> AddressV(7),
+  10 -> ClosureV(Fun('x, 'y), Map('y -> AddressV(8))))
 
 /*
 

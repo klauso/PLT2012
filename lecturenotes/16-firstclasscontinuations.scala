@@ -22,7 +22,7 @@ case class Add(lhs: Exp, rhs: Exp) extends Exp
 case class Fun(param: Symbol, body: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Id(s)
-case class App (funExpr: Exp, argExpr: Exp) extends Exp
+case class App(funExpr: Exp, argExpr: Exp) extends Exp
 
 /* The abstract syntax of Letcc is as follows: */
 case class Letcc(param: Symbol, body: Exp) extends Exp
@@ -69,34 +69,34 @@ case class ContV(f: Value => Nothing) extends Value
 
 /* Let's now study the interpreter for our new language. The branches for
  * Num, Id, Add, and Fun are straightforward applications of the CPS
- * transformation technique we already know. */ 
+ * transformation technique we already know. */
 
- def eval(e: Exp, env: Env, k: Value => Nothing) : Nothing = e match {
+def eval(e: Exp, env: Env, k: Value => Nothing): Nothing = e match {
   case Num(n: Int) => k(NumV(n))
   case Id(x) => k(env(x))
-  case Add(l,r) => {
-    eval(l,env, lv => 
-        eval(r,env, rv =>
-          (lv,rv) match {
-            case (NumV(v1), NumV(v2)) => k(NumV(v1+v2))
-            case _ => sys.error("can only add numbers")
-          }))
+  case Add(l, r) => {
+    eval(l, env, lv =>
+      eval(r, env, rv =>
+        (lv, rv) match {
+          case (NumV(v1), NumV(v2)) => k(NumV(v1 + v2))
+          case _ => sys.error("can only add numbers")
+        }))
   }
-  case f@Fun(param,body) => k(ClosureV(f, env))
-  
+  case f @ Fun(param, body) => k(ClosureV(f, env))
+
   /* In the application case we now need to distinguish whether the first argument
    * is a closure or a continuation. If it is a continuation, we ignore the
    * current continuation k and "jump" to the stored continuation by applying the
    * evaluated continuation argument to it. */
-  case App(f,a) => eval(f,env, cl => cl match {
-            case ClosureV(f,closureEnv) => eval(a,env, av => eval(f.body, closureEnv + (f.param -> av),k))
-            case ContV(f) => eval(a,env, av => f(av))
-            case _ => sys.error("can only apply functions")
+  case App(f, a) => eval(f, env, cl => cl match {
+    case ClosureV(f, closureEnv) => eval(a, env, av => eval(f.body, closureEnv + (f.param -> av), k))
+    case ContV(f) => eval(a, env, av => f(av))
+    case _ => sys.error("can only apply functions")
   })
   /* Letcc is now surprisingly simple: We continue the evaluation in the body in an
    * extended environment in which param is bound to the current continuation k,
    * wrapped as a value using ContV. */
-  case Letcc(param,body) => eval(body, env+(param -> ContV(k)), k)  
+  case Letcc(param, body) => eval(body, env + (param -> ContV(k)), k)
 }
 
 /* To make it easier to experiment with the interpreter this code provides the
@@ -107,11 +107,11 @@ case class ContV(f: Value => Nothing) extends Value
  * function that does indeed not return. We do so by letting this function
  * throw an exception. To keep track of the returned value we store it temporarily
  * in a variable, catch the exception, and return the stored value. */
- 
-def starteval(e: Exp) : Value = {
-  var res : Value = null
-  val s : Value => Nothing = (v) => { res = v; sys.error("program terminated") }
-  try { eval(e, Map.empty, s) } catch { case e:Throwable => Unit }
+
+def starteval(e: Exp): Value = {
+  var res: Value = null
+  val s: Value => Nothing = (v) => { res = v; sys.error("program terminated") }
+  try { eval(e, Map.empty, s) } catch { case e: Throwable => Unit }
   res
 }
 
