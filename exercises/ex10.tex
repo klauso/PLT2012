@@ -79,150 +79,17 @@
 
 \maketitle
 
-\section{Concrete Syntax and Abstract Syntax}
+\section{Abstract Syntax vs. Concrete Syntax}
 
-The following BNF grammar defines the \term{concrete syntax} of a language for (a subset
-of) arithmetic expressions (thus call the language AE).
-
-\begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$Nat$}{(number)}
- \prodrule{|}{$Exp\ Opr\ Exp$}{(compound)}
- \\
- \prodhead{(operator)}{$Opr$}{::=}{\tt +}{(plus)}
- \prodrule{|}{\tt -}{(minus)}
- \prodrule{|}{\tt *}{(times)}
- \prodrule{|}{\tt /}{(divides)}
-\end{grammar}
-
-From $Exp$, we can derive all valid \term{parse trees} of AE.  For example, the following
-two trees could be derived.
-
-\begin{center}
- \begin{tabular}{c c}
-  \begin{tikzpicture}
-   \Tree [ .$Exp$ [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 1} ] ]
-                  [ .$Opr$ {\tt +} ]
-                  [ .$Exp$ [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 2} ] ]
-                           [ .$Opr$ {\tt *} ]
-                           [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 3} ] ] ] ] ]
-  \end{tikzpicture}
-  &
-  \begin{tikzpicture}
-   \Tree [ .$Exp$ [ .$Exp$ [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 1} ] ]
-                           [ .$Opr$ {\tt +} ]
-                           [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 2} ] ] ]
-                  [ .$Opr$ {\tt *} ]
-                  [ .$Exp$ [ .$Nat$ \edge[dashed]; {\tt 3} ] ] ]
-  \end{tikzpicture}
- \end{tabular}
-\end{center}
-
-However, only one \emph{string} of symbols, namely \verb|1 + 2 * 3|, can be read out
-from left to right.  The string is supposed to encode the tree.  But obviously, it
-fails to include into the encoding the part that structurally differs one from the
-other.  The distinguishing part indicates whether it is \verb|2 * 3| or \verb|1 + 2|
-that should be first evaluated, hence $7$ or $9$ that should be assigned to the tree.
-Since \verb|1 + 2 * 3| leves out this important information, it is \emph{ambiguous}.
-On one hand, when you \emph{write} it, you could not make clear which tree you intend
-and what you mean; on the other hand, when I \emph{read} it, I could not make sure
-which tree is intended and what is meant.
-
-This suggests that the above grammar is \emph{adequate} for \emph{specifying} all the
-\emph{structures} of the language (from it we can derive all valid parse trees), but
-is \emph{inadequate} for \emph{determining} the structure encoded in a string
-(following it we can not build a unique parse tree for some strings).  The grammar is
-said to be \emph{ambiguous}.  To remove the ambiguity, the grammar must be enriched.
-The following improved grammar is no longer ambiguous.
-
-\begin{grammar}
- \prodhead{(level-0 expression)}{$Exp$}{::=}{$Exp_1$}{(level-1 expression)}
- \prodrule{|}{$Exp\ LOp\ Exp_1$}{(level-0 compound)}
- \\
- \prodhead{(level-1 expression)}{$Exp_1$}{::=}{$Exp_2$}{(leve-2 expression)}
- \prodrule{|}{$Exp_1\ HOp\ Exp_2$}{(level-1 compound)}
- \\
- \prodhead{(level-2 expression)}{$Exp_2$}{::=}{$Nat$}{(number)}
- \prodrule{|}{\tt ( $Exp$ )}{(parenthesized)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(minus)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
-\end{grammar}
-
-It classifies the operators into two groups, one ($LOp$) of lower precedence and the
-other ($HOp$) of higher precedence, and divides the expressions accordingly into three
-levels, from level 0 ($Exp$, with the subscript $0$ omitted) with lowest priority through
-level 2 ($Exp_2$) with highest priority.  So in an expression, sub-expressions in level-2
-will first be evaluated, then level-1 sub-expressions, and finally level-0.
-Sub-expressions in the same level are evaluated from left to right.  Strictly speaking,
-parentheses can solve the problem, however, operator precedence and associativity allows
-us to still write \verb|1 + 2 * 3| instead of \verb|1 + (2 * 3)| (which results a more
-complicated parse tree) to mean $7$.  With the new grammar, the string \verb|1 + 2 * 3|
-encodes only the following tree:
-
-\begin{center}
- \begin{tikzpicture}
-  \Tree [ .$Exp$ [ .$Exp$ [ .$Exp_1$ [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 1} ] ] ] ]
-                 [ .$LOp$ {\tt +} ]
-                 [ .$Exp_1$ [ .$Exp_1$ [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 2} ] ] ]
-                           [ .$HOp$ {\tt *} ]
-                           [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 3} ] ] ] ] ]
- \end{tikzpicture}
-\end{center}
-
-Instead, the tree as follows would gain the meaning $9$ and is encoded by the string
-\verb|(1 + 2) * 3|.
-
-\begin{center}
- \begin{tikzpicture}
-  \Tree [ .$Exp$
-           [ .$Exp_1$
-              [ .$Exp_1$
-                 [ .$Exp_2$
-                    [ {\tt (}
-                      [ .$Exp$ 
-                         [ .$Exp$
-                            [ .$Exp_1$
-                               [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 1} ] ] ] ]
-                         [ .$LOp$ {\tt +} ]
-                         [ .$Exp_1$ [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 2} ] ] ] ]
-                      {\tt )} ] ] ]
-              [ .$HOp$ {\tt *} ]
-              [ .$Exp_2$ [ .$Nat$ \edge[dashed]; {\tt 3} ] ] ] ]
- \end{tikzpicture}
-\end{center}
-
-Whether the grammar is ambiguous or not, we see that parse trees for simple arithmetic
-expressions are very complicated, especially those obtained from the unambiguous grammar.
-Moreover, this complication does not contribute much to the meaning of the expression.
-Instead, it buries the structure that is \emph{essential} for us to decide the meaning
-for an expression.  For example, the essential structure of the parse tree for
-\verb|1 + 2 * 3| is simply
-\begin{center}
- \begin{tikzpicture}
-  \Tree [ .{\tt .} {\tt 1} {\tt +} [ .{\tt .} {\tt 2} {\tt *} {\tt 3} ] ]
- \end{tikzpicture}
-\end{center}
-and for \verb|(1 + 2) * 3|
-\begin{center}
- \begin{tikzpicture}
-  \Tree [ .{\tt .} [ .{\tt .} {\tt 1} {\tt +} {\tt 2} ] {\tt *} {\tt 3} ]
- \end{tikzpicture}
-\end{center}
-That is to say, unambiguous concrete syntax is important when we want to write actual
-programs in it, but for semantic analysis of the language, only structures matter.
-Thus a grammar will serve us well as long as it covers all the structures of the
-language.  Whether it is ambiguous or not is a secondary matter.  Such a grammar for
-AE is given below:
+Presented below is the syntax of a language (call it AE) for (a subset of) arithmetic
+expressions.
 \begin{gather*}
  e \in Exp \\
  n \in Nat \\
  o \in Opr
 \end{gather*}
 \begin{grammar}
- \prodhead{(expression)}{$e$}{::=}{$n$}{(number)}
+ \prodhead{(expression)}{$e$}{::=}{$n$}{(numeral)}
  \prodrule{|}{$e_1\ o\ e_2$}{(compound)}
  \\
  \prodhead{(operator)}{$o$}{::=}{\tt +}{(plus)}
@@ -230,170 +97,45 @@ AE is given below:
  \prodrule{|}{\tt *}{(times)}
  \prodrule{|}{\tt /}{(divides)}
 \end{grammar}
-
-A form like $e \in Exp$ says that the meta-variable (variable in our meta-language,
-English and mathematics) $e$ can range over the set $Exp$ of expressions.  The
-specifications for the \term{syntactic category} expression and operator reuses the
-BNF notation.  It specifies that the possible structure of AE is one of the following:
+In theoretical formulation, such a presentation is usually \emph{said} to define
+the \term{abstract syntax} of a language for the following reasons: first, it
+captures all the structures of the language; second, the grammar is not concerned
+to handle ambiguity but leaves the deal to convention (like operator precedence,
+associativity and parentheses).  However, the syntax thus defined is only
+\emph{semi-abstract}.  It is \emph{not fully abstract} since it uses \term{infix
+notation}.  It is \emph{not completely concrete} either, since it does not handle
+the ambiguity of infix notation.  A fully abstract syntax (with the declaration of
+syntactic categories and the definition of operators omitted just for conciseness)
+for AE could be:
+\begin{grammar}
+ \prodhead{(expression)}{$e$}{::=}{$\appl{num}{n}$}{(numeral)}
+ \prodrule{|}{$\appl{com}{o, e_1, e_2}$}{(compound)}
+\end{grammar}
+It describes the leaf and node structure that build up syntax trees
 \begin{center}
  \begin{tabular}{c c}
   \begin{tikzpicture}
-   \Tree [ .$n$ ]
+   \Tree [ .$num$ $n$ ]
   \end{tikzpicture}
   &
   \begin{tikzpicture}
-   \Tree [ .{\tt .} $e_1$ $o$ $e_2$ ]
+   \Tree [ .$com$ $e_1$ $o$ $e_2$ ]
   \end{tikzpicture}
  \end{tabular}
 \end{center}
-That is, it can be either a number or a compound expression.
-
+and can be readily implemented using tree-like data structures, for example, in
+Scala as:
 \begin{verbatim}
 sealed abstract class Exp
 type Opr = String
-case class Num(int : Int) extends Exp
-case class Cpd(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
+type Nat = Int
+case class Num(nat : Nat) extends Exp
+case class Com(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
 \end{verbatim}
-
-\noindent
-It would be ideal to write programs directly by drawing their abstract syntax trees.
-But normally we write programs in text as \emph{strings} of symbols.  These strings
-encode the structures and they form a language.  So a language definition
-\emph{assigns} strings to structures.  Such a definition can be given by a set of
-grammar production rules.
-
-\subsection{Specification vs. Identification}
-
-The grammar
-
-\begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$Int$}{(number)}
- \prodrule{|}{$Exp\ Opr\ Exp$}{(compound)}
- \\
- \prodhead{(operator)}{$Opr$}{::=}{\tt +}{(plus)}
- \prodrule{|}{\tt -}{(minus)}
- \prodrule{|}{\tt *}{(times)}
- \prodrule{|}{\tt /}{(divides)}
-\end{grammar}
-
-\noindent
-defines a language for arithmetic expressions.  For every structure, this grammar can
-generate a \emph{unique} expression that encodes the structure.  For example, for the
-following two tree structures
-\begin{center}
- \begin{tabular}{c c}
-  \begin{tikzpicture}
-   \Tree [ .{\tt +} {\tt 1}
-                    [ .{\tt *} {\tt 2} {\tt 3} ] ]
-  \end{tikzpicture}
-  &
-  \begin{tikzpicture}
-   \Tree [ .{\tt *} [ .{\tt +} {\tt 1} {\tt 2} ]
-                    {\tt 3} ]
-  \end{tikzpicture}
- \end{tabular}
-\end{center}
-it will generate the expression \verb|1 + 2 * 3|.  This encoding loses some information,
-namely the structural differences between the two tree structures.  So the grammar is
-\emph{inadequate} to be used in the inverse direction.  Since given the expression to it.
-\verb|1 + 2 * 3|, we cannot decide which tree structure of the two above to assign
-In turn, we cannot decide which meaning to assign to it, since the two tree structures
-means differently: one 7, the other 9.  In other words, the expression \verb|1 + 2 * 3|
-is \emph{ambiguous}.  One way to avoid this ambiguity is by adding parentheses to the
-grammar:
-\begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$\ldots$}{}
- \prodrule{|}{{\tt (}\ $Exp$\ {\tt )}}{(parenthesized)}
-\end{grammar}
-Whenever there exists ambiguity, add parentheses.  Now two expressions \verb|1 + (2 * 3)|
-and \verb|(1 + 2) * 3| can be assigned to the two trees above respectively.  At this point,
-the grammar is adequate for \emph{theoretical} discussion about the semantics of the
-expressions in the language.  It can also be used inversely to identify the structure
-associated to an expression.  However, in \emph{paractice}, one always wants to write
-programs more concisely, say, using as few parentheses as possible.
-
-\emph{specifies} all possible \emph{tree structures} of arithmetic expressions.  It
-can be used to generate all possible arithmetic expressions (represented as strings
-of symbols), but it \emph{cannot} be used to \emph{identify} the tree structure
-associated to an arithmetic expression.  For example, the grammar can produce the
-arithmetic expression \verb|1 + 2 * 3|, but given this expression, it cannot figure
-out what the expression is intended to notate, the tree structure associated to
-\verb|(1 + 2) * 3| or the tree associated to \verb|1 + (2 * 3)|.  In other words,
-the notation \verb|1 + 2 * 3| is ambiguous.  To overcome this problem the following
-more complicated grammar has to be used.
-
-\begin{grammar}
- \prodhead{(level-0 expression)}{$Exp$}{::=}{$Exp_1$}{(level-1 expression)}
- \prodrule{|}{$Exp\ LOp\ Exp_1$}{(compound level 1)}
- \\
- \prodhead{(level-1 expression)}{$Exp_1$}{::=}{$Exp_2$}{(level-2 expression)}
- \prodrule{|}{$Exp_1\ HOp\ Exp_2$}{(compound level 2)}
- \\
- \prodhead{(level-2 expression)}{$Exp_2$}{::=}{$Int$}{(number)}
- \prodrule{|}{$\inparens{\ Exp\ }$}{(parenthesized)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(minus)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
-\end{grammar}
-\noindent
-The levels in this grammar indicates the \emph{priorities}.  Thus level-0 expressions
-have the \emph{lowest} priority while level-2 expressions have the \emph{highest}
-priority.  Using this grammar to parse the expression \verb|1 + 2 * 3|, only one tree
-structure can be assigned, the one associated to \verb|1 + (2 * 3)|.
-
-\subsection{Theoretical Formulation}
-
-The grammar
-
-\begin{gather*}
- e \in Exp \\
- n \in Int \\
- o \in Opr
-\end{gather*}
-
-\begin{grammar}
- \prodhead{(expression)}{$e$}{::=}{$n$}{(number)}
- \prodrule{|}{$e_1\ o\ e_2$}{(compound)}
- \\
- \prodhead{(operator)}{$o$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(minus)}
- \prodrule{|}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
-\end{grammar}
-
-\noindent
-widely used in theoretical work is only \emph{semi-abstract}.  But because of their
-one-to-one correspondence to the tree structure, it is  to be abstract.
-
-\subsection{Abstractness vs. Concreteness}
-
-A \emph{fully} abstract syntax renders the \emph{tree structure} of the expressions
-using constructors.
-
-\begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$Num(Int)$}{(number)}
- \prodrule{|}{$Cpd(Opr, Exp, Exp)$}{(compound)}
-\end{grammar}
-
-\noindent
-Such a description can be readily translated into representations in a language that
-supports \textsf{algebraic data types}, like Scala.
-
-\begin{verbatim}
-sealed abstract class Exp
-
-type Opr = String
-
-case class Num(int : Int) extends Exp
-case class Cpd(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
-\end{verbatim}
-
-Once the abstract syntax for a language is given, its concrete syntax can be freely
-chosen.  It can be \term{prefix notation}, \term{infix notation}, \term{postfix
-notation}, even English, etc.
+It also gives us the freedom to choose the concrete syntax for the language, say
+\term{prefix} or \term{postfix notation} instead of infix notation.  Usually infix
+notation is chosen for its readability.  Thus semi-abstract syntax given above is
+widely spread.
 
 \section{Inductive Definitions and Rule Induction}
 
@@ -403,11 +145,11 @@ notation}, even English, etc.
  \item Inductively-defined sets: natural numbers, arithmetic expressions, etc.
   \begin{mathpar}
    \inferrule
-    {n \in Int}
+    {n \in Nat}
     {n \in Exp}\ \textsc{Num} \qquad
    \inferrule
     {e_1 \in Exp \and e_2 \in Exp \and o \in Opr}
-    {e_1\ o\ e_2 \in Exp}\ \textsc{Cpd}
+    {e_1\ o\ e_2 \in Exp}\ \textsc{Com}
   \end{mathpar}
 
  \item Inductively-defined relations: $m\ Div\ n$, evaluation relation of
@@ -415,7 +157,7 @@ notation}, even English, etc.
   \begin{mathpar}
    \inferrule
     { }
-    {m\ Div\ 0}\ \textsc{Zero} \qquad
+    {m\ Div\ 0}\ \textsc{DNil} \qquad
    \inferrule
     {m\ Div\ n}
     {m\ Div\ n + m}\ \textsc{DSum}
@@ -425,12 +167,6 @@ notation}, even English, etc.
 \noindent
 Note that a relation is just a set of tuples.  Hence $m\ Div\ n$ is essentially an
 inductively-defined set of pairs $\inparens{m, n}$.
-
-
-
-
-
-
 
 \subsection{Rule Induction}
 
@@ -454,7 +190,7 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
 \begin{enumerate}
  \item Prove that the sum of the first $n$ natural numbers is
   $\frac{n\inparens{n + 1}}{2}$, that is, prove
-  \[ \sum_{n \in \mathbf{N}} n = \frac{n\inparens{n + 1}}{2} \]
+  \[ \sum_{i = 0}^{n} i = \frac{n\inparens{n + 1}}{2} \]
  \item Prove that $m\ Div\ n_1$ and $m\ Div\ n_2$ implies $m\ Div\ (n_1 + n_2)$.
   \begin{proof}
    We prove the property
@@ -507,11 +243,11 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
 
 \begin{enumerate}
  \item Give the \term{(structural) evaluation semantics} (aka. \term{(structural)
-  big-step (operational) semantics}, \term{natural semantics}) for arithmetic expressions.
+  big-step (operational) semantics}, \term{natural semantics}) for AE.
 
-  We first define a syntactic category for values. For convenience, we integrate it into
-  the semi-abstract syntax given above for arithmetic expressions. Hereby we have the
-  following syntax definition:
+  We first define a syntactic category for values.  For convenience, we integrate
+  it into the semi-abstract syntax given above for AE.  Hereby we have the following
+  syntax definition:
   \begin{gather*}
    e \in Exp \\
    n \in Int \\
@@ -528,7 +264,7 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
    \prodrule{|}{$*$}{(times)}
    \prodrule{|}{$/$}{(divides)}
    \\
-   \prodhead{(value)}{$v$}{::=}{$n$}{(number)}
+   \prodhead{(value)}{$v$}{::=}{$n$}{(numeral)}
   \end{grammar}
   
   The evaluation semantics for arithmetic expressions is given by a evaluation relation
@@ -554,8 +290,8 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   These rules should remind you of the interpreter you have crafted for arithmetic
   expressions.
 
-  Here is a demonstration of how to apply these evaluation rules to obtain the value of an
-  example expression: $1 + 2 * 3 - 4$. Note that we assume the meta-function $op$ can
+  Here is a demonstration of how to apply these evaluation rules to obtain the value of
+  an example expression: $1 + 2 * 3 - 4$. Note that we assume the meta-function $op$ can
   handle the operators $+$, $*$ and $-$ correctly.
   {\footnotesize
   \begin{mathpar}
@@ -647,4 +383,3 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
 \end{enumerate}
 
 \end{document}
-
