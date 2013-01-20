@@ -1,0 +1,123 @@
+\documentclass[a4paper,12pt]{article}
+
+% Use the Classic Thesis style
+%
+% \usepackage[nochapters]{classicthesis}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% Use text fonts
+%
+\usepackage{lmodern}  % the Latin Modern fonts which is an enhanced version of the Computer Modern fonts
+% \usepackage{tgschola}  % the Gyre Schola fonts which is an enhanced version of the New Centrury Schoolbook fonts
+
+% Use math fonts
+%
+% \usepackage{concmath}  % the Concrete Math fonts
+% \usepackage{euler}  % the Euler Math fonts
+% \usepackage{kerkis}  % the Kerkis fonts
+
+% Some font packages that provide math font may override the text font, the
+% following three commands reset it to the default.
+%
+% For the Latin Modern fonts
+%
+% \renewcommand{\rmdefault}{lmr}
+% \renewcommand{\sfdefault}{lmss}
+% \renewcommand{\ttdefault}{lmtt}
+%
+% For the Gyre Schola fonts
+%
+% \renewcommand{\rmdefault}{qcs}
+
+\usepackage{amsmath}
+
+% Use the MH bundle
+%
+% \usepackage{mhsetup}
+% \usepackage{mathtools}
+% \usepackage{mathstyle}
+% \usepackage{breqn}
+% \usepackage{empheq}
+% \usepackage{flexisym}
+
+% Use AMS-style theorem
+%
+\usepackage{amsthm}
+% \theoremstyle{definition}
+% \newtheorem{theorem}{Theorem}
+
+% Use MATH formulas in PARagraph mode Typesetting Inference Rules
+% 
+\usepackage{mathpartir}
+
+% \usepackage{tikz}
+% \usepackage{tikz-qtree}
+% \usepackage{bigfoot}
+
+% New commands
+%
+\newcommand{\term}[1]{\textsf{#1}}
+\newcommand{\appl}[2]{#1\inparens{#2}}
+\newcommand{\eval}[2]{#1 \Longrightarrow #2}
+\newcommand{\redc}[2]{#1 \longrightarrow #2}
+
+\include{prelude}
+
+% Front elements
+%
+\title{
+ Programming Languages and Types \\~\\
+ \textbf{Homework 11}
+}
+\author{
+ Yi Dai
+}
+
+\begin{document}
+
+\maketitle
+
+
+\section{$\lambda$-Calculus vs. $\lambda$-Based Language}
+
+\begin{enumerate}
+ \item Summarize the differences between $\lambda$-calculus and functional programming
+	languages based on it.
+\end{enumerate}
+
+\section{Nameless $\lambda$-Calculus}
+
+\begin{enumerate}
+ \item Implement a function \verb|removeNames| that takes a naming context and a named
+  $\lambda$-term and returns the	corresponding nameless term.
+ \item Implement a function \verb|regainNames| that takes a naming context and a nameless
+  $\lambda$-term and returns a named term.
+ \item{} [\emph{optional}] Implement the \verb|shift| and \verb|subst| function.
+ \item{} [\emph{optional}] Implement the evaluation semantics for $\lambda_{bv}$ using
+  de-Bruijn indices.
+\end{enumerate}
+
+\noindent
+Note that your implementations for \verb|removeNames| and \verb|regainNames| should be
+inverse of each other.
+
+\section{Substitution vs. Environment}
+
+\begin{enumerate}
+ \item Implement the substitution-based evaluation semantics for $\lambda_{ao}$ using
+  de-Bruijn indices.
+ \item Implement the environment-based evaluation semantics for $\lambda_{bn}$ using
+  de-Bruijn indices.
+\end{enumerate}
+
+\section{Computational $\lambda$-Calculus}
+
+\begin{enumerate}
+ \item Implement the type-checking algorithm for the simply-typed $\lambda$-calculus
+  with booleans.
+ \item{} [\emph{optional}] Add support for monads to your type-checking algorithm.
+\end{enumerate}
+
+\end{document}
