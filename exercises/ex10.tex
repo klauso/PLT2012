@@ -277,16 +277,22 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
     {\eval{v}{v}}\ \textsc{EvV} \qquad
    \inferrule
     {\eval{e_1}{v_1} \and \eval{e_2}{v_2}}
-    {\eval{e_1\ o\ e_2}{\inucorners{\appl{op}{o, v_1, v_2}}}}\ \textsc{EvC}
+    {\eval{e_1\ o\ e_2}
+          {\inucorners{\appl{op}{\inlcorners{o}, \inlcorners{v_1}, \inlcorners{v_2}}}}}
+    \ \textsc{EvC}
   \end{mathpar}
   The inductive definition contains two rules, one axiom named \textsc{EvV}, one named
   \textsc{EvC} with two premises. The axiom \textsc{EvV} essentially says that a value
   evaluates to itself. In this example, a value can only be a numeral. The rule
   \textsc{EvC} says, to obtain the value of a compound expression $e_1\ o\ e_2$, evaluate
-  $e_1$ to $v_1$ and $e_2$ to $v_2$, then use a primitive operation corresponding to the
-  operator $o$ to get the value of the whole expression from the two values $v_1$ and $v_2$.
-  Note that for simple arithmetic expressions, the order of the two premises does not
-  matter since the evaluation of the two sub-expressions are independent of each other.
+  $e_1$ to $v_1$ and $e_2$ to $v_2$, then use a mathematical function (in the meta-language)
+  $op$ which applies the mathematical operation corresponding to $o$ to the numbers
+  corresponding to $v_1$ and $v_2$ to get the result number, and finally obtain the numeral
+  in the object-language (AE) of the number in the meta-language (mathematics and English).
+  The notation $\inucorners{\ }$ goes from the meta-level to the object-level, whereas the
+  notation $\inlcorners{\ }$ goes the other way around.  For example, $\inucorners{1} =
+  \texttt{1}$ and $\inlcorners{\texttt{1}} = 1$.  \verb|1| is a \emph{numeral} in the
+  object-language, while $1$ is a \emph{number} in the meta-language.
 
   These rules should remind you of the interpreter you have crafted for arithmetic
   expressions.
@@ -300,25 +306,47 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
     {\inferrule
       {\inferrule
         { }
-        {\eval{\texttt{1}}{\texttt{1}}}\ \textsc{EvV}
+        {\eval{\texttt{1}}{\texttt{1}}}
+       \ \textsc{EvV}
        \and
        \inferrule
         {\inferrule
           { }
-          {\eval{\texttt{2}}{\texttt{2}}}\ \textsc{EvV}
+          {\eval{\texttt{2}}{\texttt{2}}}
+         \ \textsc{EvV}
          \and
          \inferrule
           { }
-          {\eval{\texttt{3}}{\texttt{3}}}\ \textsc{EvV} }
-        {\eval{\texttt{2 * 3}}{\inucorners{\appl{op}{*, 2, 3}}} = \texttt{6}}\ \textsc{EvC} }
-      {\eval{\texttt{1 + 2 * 3}}{\inucorners{\appl{op}{+, 1, 6}}} = \texttt{7}}\ \textsc{EvC}
+          {\eval{\texttt{3}}{\texttt{3}}}
+         \ \textsc{EvV} }
+        {\eval
+          {\texttt{2 * 3}}
+          {\inucorners{
+            \appl{op}{\inlcorners{\texttt{*}}, \inlcorners{\texttt{2}}, \inlcorners{\texttt{3}}}
+           } = \texttt{6} } }
+       \ \textsc{EvC} }
+      {\eval
+        {\texttt{1 + 2 * 3}}
+        {\inucorners{
+          \appl{op}{\inlcorners{\texttt{+}}, \inlcorners{\texttt{1}}, \inlcorners{\texttt{6}}}
+         } = \texttt{7} } }
+     \ \textsc{EvC}
      \and
      \inferrule
       { }
-      {\eval{\texttt{4}}{\texttt{4}}}\ \textsc{EvV} }
-    {\eval{\texttt{1 + 2 * 3 - 4}}{\inucorners{\appl{op}{-, 7, 4}}} = \texttt{3}}\ \textsc{EvC}
+      {\eval{\texttt{4}}{\texttt{4}}}
+     \ \textsc{EvV} }
+    {\eval
+      {\texttt{1 + 2 * 3 - 4}}
+      {\inucorners{
+        \appl{op}{\inlcorners{\texttt{-}}, \inlcorners{\texttt{7}}, \inlcorners{\texttt{4}}
+       } } = \texttt{3} } }
+   \ \textsc{EvC}
   \end{mathpar} }
-  So we know the value of the expression \verb|1 + 2 * 3| is $7$.
+  So we know the value of the expression \verb|1 + 2 * 3| is \verb|7|.
+  
+  As an exercise, try to derive the evaluation of the expression \verb|1 * 2 + 3 * 4| using the
+  above rules.
 
  \item Compare evaluation semantics and \term{(structural) reduction semantics} (aka.
   \term{(structural) small-step (operational) semantics}).
@@ -328,14 +356,18 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   \begin{mathpar}
    \inferrule
     { }
-    {\redc{v_1\ o\ v_2}{\inucorners{\appl{op}{o, v_1, v_2}}}}\ \textsc{Red} \\
+    {\redc{v_1\ o\ v_2}
+          {\inucorners{\appl{op}{\inlcorners{o}, \inlcorners{v_1}, \inlcorners{v_2}}}} }
+   \ \textsc{Red} \\
    \inferrule
     {\redc{e_1}{e_1'}}
-    {\redc{e_1\ o\ e_2}{e_1'\ o\ e_2}}\ \textsc{RdL}
+    {\redc{e_1\ o\ e_2}{e_1'\ o\ e_2}}
+   \ \textsc{RdL}
    \qquad
    \inferrule
     {\redc{e_2}{e_2'}}
-    {\redc{e_1\ o\ e_2}{e_1\ o\ e_2'}}\ \textsc{RdR}
+    {\redc{e_1\ o\ e_2}{e_1\ o\ e_2'}}
+   \ \textsc{RdR}
   \end{mathpar}
   The axiom \textsc{Red} says that we can invoke the primitve operation corresponding to
   the operator $o$ only when both its operands have reduced to values. The rule \textsc{RdL}
@@ -354,8 +386,14 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
     {\inferrule
       {\inferrule
         { }
-        {\redc{\texttt{2 * 3}}{\inucorners{\appl{op}{*, 2, 3}}} = \texttt{6}}\ \textsc{Red} }
-      {\redc{\texttt{1 + 2 * 3}}{\texttt{1 + 6}}}\ \textsc{RdR} }
+        {\redc
+          {\texttt{2 * 3}}
+          {\inucorners{
+            \appl{op}{\inlcorners{\texttt{*}}, \inlcorners{\texttt{2}}, \inlcorners{\texttt{3}}}
+           } = \texttt{6} } }
+       \ \textsc{Red} }
+      {\redc{\texttt{1 + 2 * 3}}{\texttt{1 + 6} } }
+     \ \textsc{RdR} }
     {\redc{\texttt{1 + 2 * 3 - 4}}{\texttt{1 + 6 - 4}}}\ \textsc{RdL}
   \end{mathpar}
   This is just one-step reduction. To reach the final result of the expression, we need
@@ -364,14 +402,24 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
    \inferrule
     {\inferrule
       { }
-      {\redc{\texttt{1 + 6}}{\inucorners{\appl{op}{+, 1, 6}}} = \texttt{7}}\ \textsc{Red} }
+      {\redc
+        {\texttt{1 + 6}}
+        {\inucorners{
+          \appl{op}{\inlcorners{\texttt{+}}, \inlcorners{\texttt{1}}, \inlcorners{\texttt{6}}}
+         } = \texttt{7} } }
+     \ \textsc{Red} }
     {\redc{\texttt{1 + 6 - 4}}{\texttt{7 - 4}}}\ \textsc{RdL}
   \end{mathpar}
   Go on reducing \verb|7 - 4|:
   \begin{mathpar}
    \inferrule
     { }
-    {\redc{\texttt{7 - 4}}{\inucorners{\appl{op}{-, 7, 4}} = \texttt{3}}}\ \textsc{Red}
+    {\redc
+      {\texttt{7 - 4}}
+      {\inucorners{
+        \appl{op}{\inlcorners{\texttt{-}}, \inlcorners{\texttt{7}}, \inlcorners{\texttt{4}}}
+       } = \texttt{3} } }
+   \ \textsc{Red}
   \end{mathpar}
   Now that the numeral \verb|3| can no longer be reduced, it is the result of the whole
   expression. So we have seen that the original expression \verb|1 + 2 * 3 - 4| is reduced
@@ -381,6 +429,9 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   \]
   Note that the number of reduction steps is clearly indicated by the number of occurrences
   of the rule \textsc{Red} in the three derivation trees.
+  
+  As an exercise, try to derive the multi-step reduction of the expression \verb|1 * 2 + 3 * 4|
+  using the above rules.
 \end{enumerate}
 
 \end{document}
