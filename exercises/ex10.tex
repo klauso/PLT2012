@@ -32,6 +32,7 @@
 % \renewcommand{\rmdefault}{qcs}
 
 \usepackage{amsmath}
+\usepackage{amssymb}
 
 % Use the MH bundle
 %
@@ -259,10 +260,10 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
    \prodhead{(expression)}{$e$}{::=}{$v$}{(value)}
    \prodrule{|}{$e_1\ o\ e_2$}{(compound)}
    \\
-   \prodhead{(operator)}{$o$}{::=}{$+$}{(plus)}
-   \prodrule{|}{$-$}{(minus)}
-   \prodrule{|}{$*$}{(times)}
-   \prodrule{|}{$/$}{(divides)}
+   \prodhead{(operator)}{$o$}{::=}{\tt +}{(plus)}
+   \prodrule{|}{\tt -}{(minus)}
+   \prodrule{|}{\tt *}{(times)}
+   \prodrule{|}{\tt /}{(divides)}
    \\
    \prodhead{(value)}{$v$}{::=}{$n$}{(numeral)}
   \end{grammar}
@@ -276,11 +277,11 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
     {\eval{v}{v}}\ \textsc{EvV} \qquad
    \inferrule
     {\eval{e_1}{v_1} \and \eval{e_2}{v_2}}
-    {\eval{e_1\ o\ e_2}{\appl{op}{o, v_1, v_2}}}\ \textsc{EvC}
+    {\eval{e_1\ o\ e_2}{\inucorners{\appl{op}{o, v_1, v_2}}}}\ \textsc{EvC}
   \end{mathpar}
   The inductive definition contains two rules, one axiom named \textsc{EvV}, one named
   \textsc{EvC} with two premises. The axiom \textsc{EvV} essentially says that a value
-  evaluates to itself. In this example, a value can only be a number. The rule
+  evaluates to itself. In this example, a value can only be a numeral. The rule
   \textsc{EvC} says, to obtain the value of a compound expression $e_1\ o\ e_2$, evaluate
   $e_1$ to $v_1$ and $e_2$ to $v_2$, then use a primitive operation corresponding to the
   operator $o$ to get the value of the whole expression from the two values $v_1$ and $v_2$.
@@ -291,33 +292,33 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   expressions.
 
   Here is a demonstration of how to apply these evaluation rules to obtain the value of
-  an example expression: $1 + 2 * 3 - 4$. Note that we assume the meta-function $op$ can
-  handle the operators $+$, $*$ and $-$ correctly.
+  an example expression: \verb|1 + 2 * 3 - 4|. Note that we assume the meta-function $op$
+  can handle the operators \verb|+|, \verb|*| and \verb|-| correctly.
   {\footnotesize
   \begin{mathpar}
    \inferrule
     {\inferrule
       {\inferrule
         { }
-        {\eval{1}{1}}\ \textsc{EvV}
+        {\eval{\texttt{1}}{\texttt{1}}}\ \textsc{EvV}
        \and
        \inferrule
         {\inferrule
           { }
-          {\eval{2}{2}}\ \textsc{EvV}
+          {\eval{\texttt{2}}{\texttt{2}}}\ \textsc{EvV}
          \and
          \inferrule
           { }
-          {\eval{3}{3}}\ \textsc{EvV} }
-        {\eval{2 * 3}{\appl{op}{*, 2, 3}} = 6}\ \textsc{EvC} }
-      {\eval{1 + 2 * 3}{\appl{op}{+, 1, 6}} = 7}\ \textsc{EvC}
+          {\eval{\texttt{3}}{\texttt{3}}}\ \textsc{EvV} }
+        {\eval{\texttt{2 * 3}}{\inucorners{\appl{op}{*, 2, 3}}} = \texttt{6}}\ \textsc{EvC} }
+      {\eval{\texttt{1 + 2 * 3}}{\inucorners{\appl{op}{+, 1, 6}}} = \texttt{7}}\ \textsc{EvC}
      \and
      \inferrule
       { }
-      {\eval{4}{4}}\ \textsc{EvV} }
-    {\eval{1 + 2 * 3 - 4}{\appl{op}{-, 7, 4}} = 3}\ \textsc{EvC}
+      {\eval{\texttt{4}}{\texttt{4}}}\ \textsc{EvV} }
+    {\eval{\texttt{1 + 2 * 3 - 4}}{\inucorners{\appl{op}{-, 7, 4}}} = \texttt{3}}\ \textsc{EvC}
   \end{mathpar} }
-  So we know the value of the expression $1 + 2 * 3$ is $7$.
+  So we know the value of the expression \verb|1 + 2 * 3| is $7$.
 
  \item Compare evaluation semantics and \term{(structural) reduction semantics} (aka.
   \term{(structural) small-step (operational) semantics}).
@@ -327,7 +328,7 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   \begin{mathpar}
    \inferrule
     { }
-    {\redc{v_1\ o\ v_2}{\appl{op}{o, v_1, v_2}}}\ \textsc{Red} \\
+    {\redc{v_1\ o\ v_2}{\inucorners{\appl{op}{o, v_1, v_2}}}}\ \textsc{Red} \\
    \inferrule
     {\redc{e_1}{e_1'}}
     {\redc{e_1\ o\ e_2}{e_1'\ o\ e_2}}\ \textsc{RdL}
@@ -346,37 +347,37 @@ an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
   when it is, maybe Maya people?).
 
   Here is a demonstration of how to apply these reduction rules to obtain the final result
-  the same expression $1 + 2 * 3 - 4$. Again, we assume the correctness of the
+  the same expression \verb|1 + 2 * 3 - 4|. Again, we assume the correctness of the
   meta-function $op$.
   \begin{mathpar}
    \inferrule
     {\inferrule
       {\inferrule
         { }
-        {\redc{2 * 3}{\appl{op}{*, 2, 3}} = 6}\ \textsc{Red} }
-      {\redc{1 + 2 * 3}{1 + 6}}\ \textsc{RdR} }
-    {\redc{1 + 2 * 3 - 4}{1 + 6 - 4}}\ \textsc{RdL}
+        {\redc{\texttt{2 * 3}}{\inucorners{\appl{op}{*, 2, 3}}} = \texttt{6}}\ \textsc{Red} }
+      {\redc{\texttt{1 + 2 * 3}}{\texttt{1 + 6}}}\ \textsc{RdR} }
+    {\redc{\texttt{1 + 2 * 3 - 4}}{\texttt{1 + 6 - 4}}}\ \textsc{RdL}
   \end{mathpar}
   This is just one-step reduction. To reach the final result of the expression, we need
-  continue reducing the result expression $1 + 6 - 4$:
+  continue reducing the result expression \verb|1 + 6 - 4|:
   \begin{mathpar}
    \inferrule
     {\inferrule
       { }
-      {\redc{1 + 6}{\appl{op}{+, 1, 6}} = 7}\ \textsc{Red} }
-    {\redc{1 + 6 - 4}{7 - 4}}\ \textsc{RdL}
+      {\redc{\texttt{1 + 6}}{\inucorners{\appl{op}{+, 1, 6}}} = \texttt{7}}\ \textsc{Red} }
+    {\redc{\texttt{1 + 6 - 4}}{\texttt{7 - 4}}}\ \textsc{RdL}
   \end{mathpar}
-  Go on reducing $7 - 4$:
+  Go on reducing \verb|7 - 4|:
   \begin{mathpar}
    \inferrule
     { }
-    {\redc{7 - 4}{3}}\ \textsc{Red}
+    {\redc{\texttt{7 - 4}}{\inucorners{\appl{op}{-, 7, 4}} = \texttt{3}}}\ \textsc{Red}
   \end{mathpar}
-  Now that the number $3$ can no longer be reduced, it is the result of the whole
-  expression. So we have seen that the original expression $1 + 2 * 3 - 4$ is reduced by
-  \emph{three} steps to the number $3$, that is,
+  Now that the numeral \verb|3| can no longer be reduced, it is the result of the whole
+  expression. So we have seen that the original expression \verb|1 + 2 * 3 - 4| is reduced
+  by \emph{three} steps to the numeral \verb|3|, that is,
   \[
-    \redc{1 + 2 * 3 - 4}{\redc{1 + 6 - 4}{\redc{7 - 4}{3}}}
+    \redc{\texttt{1 + 2 * 3 - 4}}{\redc{\texttt{1 + 6 - 4}}{\redc{\texttt{7 - 4}}{\texttt{3}}}}
   \]
   Note that the number of reduction steps is clearly indicated by the number of occurrences
   of the rule \textsc{Red} in the three derivation trees.
