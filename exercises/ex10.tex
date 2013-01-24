@@ -32,6 +32,7 @@
 % \renewcommand{\rmdefault}{qcs}
 
 \usepackage{amsmath}
+\usepackage{amssymb}
 
 % Use the MH bundle
 %
@@ -52,9 +53,16 @@
 % 
 \usepackage{mathpartir}
 
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{bigfoot}
+
 % New commands
 %
 \newcommand{\term}[1]{\textsf{#1}}
+\newcommand{\appl}[2]{#1\inparens{#2}}
+\newcommand{\eval}[2]{#1 \Longrightarrow #2}
+\newcommand{\redc}[2]{#1 \longrightarrow #2}
 
 \include{prelude}
 
@@ -74,96 +82,61 @@
 
 \section{Abstract Syntax vs. Concrete Syntax}
 
-\subsection{Specification vs. Identification}
-
-The grammar
-
-\begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$Int$}{(number)}
- \prodrule{|}{$Exp\ Opr\ Exp$}{(compound)}
- \\
- \prodhead{(operator)}{$Opr$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(munus)}
- \prodrule{|}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
-\end{grammar}
-
-\noindent
-for \emph{specification} vs. the grammar
-
-\begin{grammar}
- \prodhead{(level-0 expression)}{$Exp$}{::=}{$Exp1$}{(level-1 expression)}
- \prodrule{|}{$Exp\ LOp\ Exp1$}{(compound level 1)}
- \\
- \prodhead{(level-1 expression)}{$Exp1$}{::=}{$Exp2$}{(level-2 expression)}
- \prodrule{|}{$Exp1\ HOp\ Exp2$}{(compound level 2)}
- \\
- \prodhead{(level-2 expression)}{$Exp2$}{::=}{$Int$}{(number)}
- \prodrule{|}{$\inparens{\ Exp\ }$}{(parenthesized)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(munus)}
- \\
- \prodhead{(lower operator)}{$LOp$}{::=}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
-\end{grammar}
-
-\noindent
-for \emph{identification}.
-
-Note that the levels in the second grammar indicates the \emph{priorities}.  Thus
-level-0 expressions have the \emph{lowest} priority while level-2 expressions have
-the \emph{highest} priority.
-
-\subsection{Theoretical Formulation}
-
-The grammar
-
+Presented below is the syntax of a language (call it AE) for (a subset of) arithmetic
+expressions.
 \begin{gather*}
  e \in Exp \\
- n \in Int \\
+ n \in Nat \\
  o \in Opr
 \end{gather*}
-
 \begin{grammar}
- \prodhead{(expression)}{$e$}{::=}{$n$}{(number)}
+ \prodhead{(expression)}{$e$}{::=}{$n$}{(numeral)}
  \prodrule{|}{$e_1\ o\ e_2$}{(compound)}
  \\
- \prodhead{(operator)}{$o$}{::=}{$+$}{(plus)}
- \prodrule{|}{$-$}{(munus)}
- \prodrule{|}{$*$}{(times)}
- \prodrule{|}{$/$}{(divides)}
+ \prodhead{(operator)}{$o$}{::=}{\tt +}{(plus)}
+ \prodrule{|}{\tt -}{(minus)}
+ \prodrule{|}{\tt *}{(times)}
+ \prodrule{|}{\tt /}{(divides)}
 \end{grammar}
-
-\noindent
-widely used in theoretical work is only \emph{semi-abstract}.
-
-\subsection{Abstractness vs. Concreteness}
-
-A \emph{fully} abstract syntax renders the \emph{tree structure} of the expressions
-using constructors.
-
+In theoretical formulation, such a presentation is usually \emph{said} to define
+the \term{abstract syntax} of a language for the following reasons: first, it
+captures all the structures of the language; second, the grammar is not concerned
+to handle ambiguity but leaves the deal to convention (like operator precedence,
+associativity and parentheses).  However, the syntax thus defined is only
+\emph{semi-abstract}.  It is \emph{not fully abstract} since it uses \term{infix
+notation}.  It is \emph{not completely concrete} either, since it does not handle
+the ambiguity of infix notation.  A fully abstract syntax (with the declaration of
+syntactic categories and the definition of operators omitted just for conciseness)
+for AE could be:
 \begin{grammar}
- \prodhead{(expression)}{$Exp$}{::=}{$Num(Int)$}{(number)}
- \prodrule{|}{$Cpd(Opr, Exp, Exp)$}{(compound)}
+ \prodhead{(expression)}{$e$}{::=}{$\appl{num}{n}$}{(numeral)}
+ \prodrule{|}{$\appl{com}{o, e_1, e_2}$}{(compound)}
 \end{grammar}
-
-\noindent
-Such a description can be readily translated into representations in a language that
-supports \textsf{algebraic data types}, like Scala.
-
+It describes the leaf and node structure that build up syntax trees
+\begin{center}
+ \begin{tabular}{c c}
+  \begin{tikzpicture}
+   \Tree [ .$num$ $n$ ]
+  \end{tikzpicture}
+  &
+  \begin{tikzpicture}
+   \Tree [ .$com$ $e_1$ $o$ $e_2$ ]
+  \end{tikzpicture}
+ \end{tabular}
+\end{center}
+and can be readily implemented using tree-like data structures, for example, in
+Scala as:
 \begin{verbatim}
 sealed abstract class Exp
-
 type Opr = String
-
-case class Num(int : Int) extends Exp
-case class Cpd(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
+type Nat = Int
+case class Num(nat : Nat) extends Exp
+case class Com(opr : Opr, lhs : Exp, rhs : Exp) extends Exp
 \end{verbatim}
-
-Once the abstract syntax for a language is given, its concrete syntax can be freely
-chosen.  It can be \term{prefix notation}, \term{infix notation}, \term{postfix
-notation}, even English, etc.
+It also gives us the freedom to choose the concrete syntax for the language, say
+\term{prefix} or \term{postfix notation} instead of infix notation.  Usually infix
+notation is chosen for its readability.  Thus semi-abstract syntax given above is
+widely spread.
 
 \section{Inductive Definitions and Rule Induction}
 
@@ -173,11 +146,11 @@ notation}, even English, etc.
  \item Inductively-defined sets: natural numbers, arithmetic expressions, etc.
   \begin{mathpar}
    \inferrule
-    {n \in Int}
+    {n \in Nat}
     {n \in Exp}\ \textsc{Num} \qquad
    \inferrule
     {e_1 \in Exp \and e_2 \in Exp \and o \in Opr}
-    {e_1\ o\ e_2 \in Exp}\ \textsc{Cpd}
+    {e_1\ o\ e_2 \in Exp}\ \textsc{Com}
   \end{mathpar}
 
  \item Inductively-defined relations: $m\ Div\ n$, evaluation relation of
@@ -185,7 +158,7 @@ notation}, even English, etc.
   \begin{mathpar}
    \inferrule
     { }
-    {m\ Div\ 0}\ \textsc{Zero} \qquad
+    {m\ Div\ 0}\ \textsc{DNil} \qquad
    \inferrule
     {m\ Div\ n}
     {m\ Div\ n + m}\ \textsc{DSum}
@@ -211,20 +184,19 @@ every rule in the inductive definition.  That is, for every rule of the form
 \end{mathpar}
 
 \noindent
-prove $P\inparens{conclusion}$ assuming $P\inparens{premise_1}$, $\ldots$,
-$P\inparens{premise_n}$, for every $n \in \mathbf{N}$.  When $n = 0$, a rule
-becomes an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin
-air''.
+prove $\appl{P}{conclusion}$ assuming $\appl{P}{premise_1}$, $\ldots$,
+$\appl{P}{premise_n}$, for every $n \in \mathbf{N}$.  When $n = 0$, a rule becomes
+an axiom.  In this case, you have to prove $P(conclusion)$ ``out of thin air''.
 
 \begin{enumerate}
  \item Prove that the sum of the first $n$ natural numbers is
   $\frac{n\inparens{n + 1}}{2}$, that is, prove
-  \[ \sum_{n \in \mathbf{N}} n = \frac{n\inparens{n + 1}}{2} \]
+  \[ \sum_{i = 0}^{n} i = \frac{n\inparens{n + 1}}{2} \]
  \item Prove that $m\ Div\ n_1$ and $m\ Div\ n_2$ implies $m\ Div\ (n_1 + n_2)$.
   \begin{proof}
    We prove the property
    \[
-     P\inparens{m\ Div\ n_1} = \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
+     \appl{P}{m\ Div\ n_1} = \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
      \text{implies}\ m\ Div\ (n_1 + n_2)}
    \]
    for every $m\ Div\ n_1$ by rule induction on $m\ Div\ n_1$.
@@ -232,7 +204,7 @@ air''.
    \begin{itemize}
     \item Base case: for $\inferrule{ }{m\ Div\ 0}$, we want to prove
      \[
-       P\inparens{m\ Div\ 0} = \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
+       \appl{P}{m\ Div\ 0} = \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
        \text{implies}\ m\ Div\ (0 + n_2)}
      \]
 
@@ -241,12 +213,12 @@ air''.
     \item Inductive case: for $\inferrule{m\ Div\ n_1}{m\ Div\ n_1 + m}$, we want to
      prove
      \begin{multline*}
-      P\inparens{m\ Div\ \inparens{n_1 + m}} = \\ \inbracks{\forall n_2 \in \mathbf{N},
+      \appl{P}{m\ Div\ \inparens{n_1 + m}} = \\ \inbracks{\forall n_2 \in \mathbf{N},
        m\ Div\ n_2\ \text{implies}\ m\ Div\ (n_1 + m + n_2)},
      \end{multline*}
      assuming the inductive hypothesis
      \begin{multline*}
-      P\inparens{m\ Div\ n_1} = \\ \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
+      \appl{P}{m\ Div\ n_1} = \\ \inbracks{\forall n_2 \in \mathbf{N}, m\ Div\ n_2\
       \text{implies}\ m\ Div\ (n_1 + m)},
      \end{multline*}
 
@@ -262,7 +234,7 @@ air''.
      of $+$, we can derive $m\ Div\ \inparens{n_1 + m + n_2}$, which is exactly what we 
      want to prove.
    \end{itemize}
-   Therefore, we have proved $P\inparens{m\ Div\ n_1}$ for every $m\ Div\ n_1$, that is,
+   Therefore, we have proved $\appl{P}{m\ Div\ n_1}$ for every $m\ Div\ n_1$, that is,
    $\forall m, n_1, n_2 \in \mathbf{N}, m\ Div\ n_1$ and $m\ Div\ n_2$ implies $m\ Div\
    (n_1 + n_2)$.
   \end{proof}
@@ -272,11 +244,11 @@ air''.
 
 \begin{enumerate}
  \item Give the \term{(structural) evaluation semantics} (aka. \term{(structural)
-  big-step (operational) semantics}, \term{natural semantics}) for arithmetic expressions.
+  big-step (operational) semantics}, \term{natural semantics}) for AE.
 
-  We first define a syntactic category for values. For convenience, we integrate it into
-  the semi-abstract syntax given above for arithmetic expressions. Hereby we have the
-  following syntax definition:
+  We first define a syntactic category for values.  For convenience, we integrate
+  it into the semi-abstract syntax given above for AE.  Hereby we have the following
+  syntax definition:
   \begin{gather*}
    e \in Exp \\
    n \in Int \\
@@ -288,128 +260,178 @@ air''.
    \prodhead{(expression)}{$e$}{::=}{$v$}{(value)}
    \prodrule{|}{$e_1\ o\ e_2$}{(compound)}
    \\
-   \prodhead{(operator)}{$o$}{::=}{$+$}{(plus)}
-   \prodrule{|}{$-$}{(munus)}
-   \prodrule{|}{$*$}{(times)}
-   \prodrule{|}{$/$}{(divides)}
+   \prodhead{(operator)}{$o$}{::=}{\tt +}{(plus)}
+   \prodrule{|}{\tt -}{(minus)}
+   \prodrule{|}{\tt *}{(times)}
+   \prodrule{|}{\tt /}{(divides)}
    \\
-   \prodhead{(value)}{$v$}{::=}{$n$}{(number)}
+   \prodhead{(value)}{$v$}{::=}{$n$}{(numeral)}
   \end{grammar}
   
   The evaluation semantics for arithmetic expressions is given by a evaluation relation
   between expressions and values (the final form of expressions after a series of
-  reductions), notated as $e \Longrightarrow v$, inductively defined as follows:
+  reductions), notated as $\eval{e}{v}$, inductively defined as follows:
   \begin{mathpar}
    \inferrule
     { }
-    {v \Longrightarrow v}\ \textsc{EvV} \qquad
+    {\eval{v}{v}}\ \textsc{EvV} \qquad
    \inferrule
-    {e_1 \Longrightarrow v_1 \and e_2 \Longrightarrow v_2}
-    {e_1\ o\ e_2 \Longrightarrow op\inparens{o, v_1, v_2}}\ \textsc{EvC}
+    {\eval{e_1}{v_1} \and \eval{e_2}{v_2}}
+    {\eval{e_1\ o\ e_2}
+          {\inucorners{\appl{op}{\inlcorners{o}, \inlcorners{v_1}, \inlcorners{v_2}}}}}
+    \ \textsc{EvC}
   \end{mathpar}
   The inductive definition contains two rules, one axiom named \textsc{EvV}, one named
   \textsc{EvC} with two premises. The axiom \textsc{EvV} essentially says that a value
-  evaluates to itself. In this example, a value can only be a number. The rule
+  evaluates to itself. In this example, a value can only be a numeral. The rule
   \textsc{EvC} says, to obtain the value of a compound expression $e_1\ o\ e_2$, evaluate
-  $e_1$ to $v_1$ and $e_2$ to $v_2$, then use a primitive operation corresponding to the
-  operator $o$ to get the value of the whole expression from the two values $v_1$ and $v_2$.
-  Note that for simple arithmetic expressions, the order of the two premises does not
-  matter since the evaluation of the two sub-expressions are independent of each other.
+  $e_1$ to $v_1$ and $e_2$ to $v_2$, then use a mathematical function (in the meta-language)
+  $op$ which applies the mathematical operation corresponding to $o$ to the numbers
+  corresponding to $v_1$ and $v_2$ to get the result number, and finally obtain the numeral
+  in the object-language (AE) of the number in the meta-language (mathematics and English).
+  The notation $\inucorners{\ }$ goes from the meta-level to the object-level, whereas the
+  notation $\inlcorners{\ }$ goes the other way around.  For example, $\inucorners{1} =
+  \texttt{1}$ and $\inlcorners{\texttt{1}} = 1$.  \verb|1| is a \emph{numeral} in the
+  object-language, while $1$ is a \emph{number} in the meta-language.
 
   These rules should remind you of the interpreter you have crafted for arithmetic
   expressions.
 
-  Here is a demonstration of how to apply these evaluation rules to obtain the value of an
-  example expression: $1 + 2 * 3 - 4$. Note that we assume the meta-function $op$ can
-  handle the operators $+$, $*$ and $-$ correctly.
+  Here is a demonstration of how to apply these evaluation rules to obtain the value of
+  an example expression: \verb|1 + 2 * 3 - 4|. Note that we assume the meta-function $op$
+  can handle the operators \verb|+|, \verb|*| and \verb|-| correctly.
   {\footnotesize
   \begin{mathpar}
    \inferrule
     {\inferrule
       {\inferrule
         { }
-        {1 \Longrightarrow 1}\ \textsc{EvV}
+        {\eval{\texttt{1}}{\texttt{1}}}
+       \ \textsc{EvV}
        \and
        \inferrule
         {\inferrule
           { }
-          {2 \Longrightarrow 2}\ \textsc{EvV}
+          {\eval{\texttt{2}}{\texttt{2}}}
+         \ \textsc{EvV}
          \and
          \inferrule
           { }
-          {3 \Longrightarrow 3}\ \textsc{EvV} }
-        {2 * 3 \Longrightarrow op\inparens{*, 2, 3} = 6}\ \textsc{EvC} }
-      {1 + 2 * 3 \Longrightarrow op\inparens{+, 1, 6} = 7}\ \textsc{EvC}
+          {\eval{\texttt{3}}{\texttt{3}}}
+         \ \textsc{EvV} }
+        {\eval
+          {\texttt{2 * 3}}
+          {\inucorners{
+            \appl{op}{\inlcorners{\texttt{*}}, \inlcorners{\texttt{2}}, \inlcorners{\texttt{3}}}
+           } = \texttt{6} } }
+       \ \textsc{EvC} }
+      {\eval
+        {\texttt{1 + 2 * 3}}
+        {\inucorners{
+          \appl{op}{\inlcorners{\texttt{+}}, \inlcorners{\texttt{1}}, \inlcorners{\texttt{6}}}
+         } = \texttt{7} } }
+     \ \textsc{EvC}
      \and
      \inferrule
       { }
-      {4 \Longrightarrow 4}\ \textsc{EvV} }
-    {1 + 2 * 3 - 4 \Longrightarrow op\inparens{-, 7, 4} = 3}\ \textsc{EvC}
+      {\eval{\texttt{4}}{\texttt{4}}}
+     \ \textsc{EvV} }
+    {\eval
+      {\texttt{1 + 2 * 3 - 4}}
+      {\inucorners{
+        \appl{op}{\inlcorners{\texttt{-}}, \inlcorners{\texttt{7}}, \inlcorners{\texttt{4}}
+       } } = \texttt{3} } }
+   \ \textsc{EvC}
   \end{mathpar} }
-  So we know the value of the expression $1 + 2 * 3$ is $7$.
+  So we know the value of the expression \verb|1 + 2 * 3| is \verb|7|.
+  
+  As an exercise, try to derive the evaluation of the expression \verb|1 * 2 + 3 * 4| using the
+  above rules.
 
  \item Compare evaluation semantics and \term{(structural) reduction semantics} (aka.
   \term{(structural) small-step (operational) semantics}).
 
   The reduction semantics for arithmetic expressions is given by a reduction relation
-  between expressions, notated as $e \longrightarrow e'$, inductively defined as follows:
+  between expressions, notated as $\redc{e}{e'}$, inductively defined as follows:
   \begin{mathpar}
    \inferrule
     { }
-    {v_1\ o\ v_2 \longrightarrow op\inparens{o, v_1, v_2}}\ \textsc{Red} \\
+    {\redc{v_1\ o\ v_2}
+          {\inucorners{\appl{op}{\inlcorners{o}, \inlcorners{v_1}, \inlcorners{v_2}}}} }
+   \ \textsc{Red} \\
    \inferrule
-    {e_1 \longrightarrow e_1'}
-    {e_1\ o\ e_2 \longrightarrow e_1'\ o\ e_2}\ \textsc{RdL}
+    {\redc{e_1}{e_1'}}
+    {\redc{e_1\ o\ e_2}{e_1'\ o\ e_2}}
+   \ \textsc{RdL}
    \qquad
    \inferrule
-    {e_2 \longrightarrow e_2'}
-    {e_1\ o\ e_2 \longrightarrow e_1\ o\ e_2'}\ \textsc{RdR}
+    {\redc{e_2}{e_2'}}
+    {\redc{e_1\ o\ e_2}{e_1\ o\ e_2'}}
+   \ \textsc{RdR}
   \end{mathpar}
   The axiom \textsc{Red} says that we can invoke the primitve operation corresponding to
   the operator $o$ only when both its operands have reduced to values. The rule \textsc{RdL}
   covers one-step reduction of the left operand of a compound expression, while the rule
   \textsc{RdR} covers that of the right operand. Note that there is no longer a rule like
-  $v \longrightarrow v$, since a value cannot be reduced in one step to anything. If such a
+  $\redc{v}{v}$, since a value cannot be reduced in one step to anything. If such a
   rule is included in the definition, after an expression is reduced to a value, one can
   keep reducing it to itself by applying this rule till the end of the world (Who knows
   when it is, maybe Maya people?).
 
   Here is a demonstration of how to apply these reduction rules to obtain the final result
-  the same expression $1 + 2 * 3 - 4$. Again, we assume the correctness of the
+  the same expression \verb|1 + 2 * 3 - 4|. Again, we assume the correctness of the
   meta-function $op$.
   \begin{mathpar}
    \inferrule
     {\inferrule
       {\inferrule
         { }
-        {2 * 3 \longrightarrow op\inparens{*, 2, 3} = 6}\ \textsc{Red} }
-      {1 + 2 * 3 \longrightarrow 1 + 6}\ \textsc{RdR} }
-    {1 + 2 * 3 - 4 \longrightarrow 1 + 6 - 4}\ \textsc{RdL}
+        {\redc
+          {\texttt{2 * 3}}
+          {\inucorners{
+            \appl{op}{\inlcorners{\texttt{*}}, \inlcorners{\texttt{2}}, \inlcorners{\texttt{3}}}
+           } = \texttt{6} } }
+       \ \textsc{Red} }
+      {\redc{\texttt{1 + 2 * 3}}{\texttt{1 + 6} } }
+     \ \textsc{RdR} }
+    {\redc{\texttt{1 + 2 * 3 - 4}}{\texttt{1 + 6 - 4}}}\ \textsc{RdL}
   \end{mathpar}
   This is just one-step reduction. To reach the final result of the expression, we need
-  continue reducing the result expression $1 + 6 - 4$:
+  continue reducing the result expression \verb|1 + 6 - 4|:
   \begin{mathpar}
    \inferrule
     {\inferrule
       { }
-      {1 + 6 \longrightarrow op\inparens{+, 1, 6} = 7}\ \textsc{Red} }
-    {1 + 6 - 4 \longrightarrow 7 - 4}\ \textsc{RdL}
+      {\redc
+        {\texttt{1 + 6}}
+        {\inucorners{
+          \appl{op}{\inlcorners{\texttt{+}}, \inlcorners{\texttt{1}}, \inlcorners{\texttt{6}}}
+         } = \texttt{7} } }
+     \ \textsc{Red} }
+    {\redc{\texttt{1 + 6 - 4}}{\texttt{7 - 4}}}\ \textsc{RdL}
   \end{mathpar}
-  Go on reducing $7 - 4$:
+  Go on reducing \verb|7 - 4|:
   \begin{mathpar}
    \inferrule
     { }
-    {7 - 4 \longrightarrow 3}\ \textsc{Red}
+    {\redc
+      {\texttt{7 - 4}}
+      {\inucorners{
+        \appl{op}{\inlcorners{\texttt{-}}, \inlcorners{\texttt{7}}, \inlcorners{\texttt{4}}}
+       } = \texttt{3} } }
+   \ \textsc{Red}
   \end{mathpar}
-  Now that the number $3$ can no longer be reduced, it is the result of the whole
-  expression. So we have seen that the original expression $1 + 2 * 3 - 4$ is reduced by
-  \emph{three} steps to the number $3$, that is,
+  Now that the numeral \verb|3| can no longer be reduced, it is the result of the whole
+  expression. So we have seen that the original expression \verb|1 + 2 * 3 - 4| is reduced
+  by \emph{three} steps to the numeral \verb|3|, that is,
   \[
-    1 + 2 * 3 - 4 \longrightarrow 1 + 6 - 4 \longrightarrow 7 - 4 \longrightarrow 3
+    \redc{\texttt{1 + 2 * 3 - 4}}{\redc{\texttt{1 + 6 - 4}}{\redc{\texttt{7 - 4}}{\texttt{3}}}}
   \]
   Note that the number of reduction steps is clearly indicated by the number of occurrences
   of the rule \textsc{Red} in the three derivation trees.
+  
+  As an exercise, try to derive the multi-step reduction of the expression \verb|1 * 2 + 3 * 4|
+  using the above rules.
 \end{enumerate}
 
 \end{document}
-

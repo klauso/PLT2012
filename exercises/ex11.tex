@@ -52,9 +52,16 @@
 % 
 \usepackage{mathpartir}
 
+% \usepackage{tikz}
+% \usepackage{tikz-qtree}
+% \usepackage{bigfoot}
+
 % New commands
 %
 \newcommand{\term}[1]{\textsf{#1}}
+\newcommand{\appl}[2]{#1\inparens{#2}}
+\newcommand{\eval}[2]{#1 \Longrightarrow #2}
+\newcommand{\redc}[2]{#1 \longrightarrow #2}
 
 \include{prelude}
 
@@ -62,7 +69,7 @@
 %
 \title{
  Programming Languages and Types \\~\\
- \textbf{Homework 10}
+ \textbf{Exercise 11}
 }
 \author{
  Yi Dai
@@ -72,47 +79,27 @@
 
 \maketitle
 
-\section{Abstract Syntax vs. Concrete Syntax}
 
-\begin{enumerate}
- \item Give the abstract syntax for the language ABE (Arithmetic-Boolean Expressions)
-  presented in the lecture, in BNF and in Scala.
+\section{$\lambda$-Calculus vs. $\lambda$-Based Language}
 
- \item Give a concrete syntax other than infix notation for ABE. That is, choose either
-  prefix notation or postfix notation.
-\end{enumerate}
+\section{Nameless $\lambda$-Calculus}
 
-\section{Inductive Definitions and Rule Induction}
+\subsection{$\alpha$-Conversion: Pros and Cons}
 
-\begin{enumerate}
- \item Give an inductive definition for the ternary relation $Rem$:
-  \[
-    (m, n)\ Rem\ r\ \text{if}\ r\ \text{is the remainder when}\ n\ \text{is divided by}\
-    m, \text{where}\ m \ne 0.
-  \]
-  You can assume the availability of other arithmetic operations or relations.
+\subsection{$\lambda$-Calculus Using De-Bruijn Indices}
 
- \item Use the inductive definition for Rem, prove that
-  \[
-    (m, n)\ Rem\ r_1\ \text{and}\ (m, n)\ Rem\ r_2\ \text{implies}\ r1 = r2.
-  \]
-\end{enumerate}
+\subsection{Evaluation Semantics for $\lambda_{bv}$}
 
-\section{Evaluation Semantics vs. Reduction Semantics}
+\section{Substitution vs. Environment}
 
-\begin{enumerate}
- \item Give the evaluation semantics for ABE.
+\subsection{Substitution-Based Evaluation Semantics for $\lambda_{ao}$}
 
- \item Implement both the evaluation semantics and the multi-step reduction semantics for
-  ABE. Show that the two implementations give the same results for the same expressions by
-  a reasonable number of tests.
+\subsection{Environment-Based Evaluation Semantics for $\lambda_{bn}$}
 
- \item{} [\emph{optional}] Prove that the evaluation semantics coincides with the multi-step
-  reduction semantics, that is,
-  \[ \forall e \in Exp, e \Longrightarrow v\ \text{if and only if}\ e \longrightarrow^{*}
-      v.
-  \]
-\end{enumerate}
+\section{Computational $\lambda$-Calculus}
+
+\subsection{$\lambda$-Calculus Extended with Monads}
+
+\subsection{Typing $\lambda_c$}
 
 \end{document}
-

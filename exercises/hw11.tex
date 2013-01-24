@@ -52,9 +52,16 @@
 % 
 \usepackage{mathpartir}
 
+% \usepackage{tikz}
+% \usepackage{tikz-qtree}
+% \usepackage{bigfoot}
+
 % New commands
 %
 \newcommand{\term}[1]{\textsf{#1}}
+\newcommand{\appl}[2]{#1\inparens{#2}}
+\newcommand{\eval}[2]{#1 \Longrightarrow #2}
+\newcommand{\redc}[2]{#1 \longrightarrow #2}
 
 \include{prelude}
 
@@ -62,7 +69,7 @@
 %
 \title{
  Programming Languages and Types \\~\\
- \textbf{Homework 10}
+ \textbf{Homework 11}
 }
 \author{
  Yi Dai
@@ -72,47 +79,45 @@
 
 \maketitle
 
-\section{Abstract Syntax vs. Concrete Syntax}
+
+\section{$\lambda$-Calculus vs. $\lambda$-Based Language}
 
 \begin{enumerate}
- \item Give the abstract syntax for the language ABE (Arithmetic-Boolean Expressions)
-  presented in the lecture, in BNF and in Scala.
-
- \item Give a concrete syntax other than infix notation for ABE. That is, choose either
-  prefix notation or postfix notation.
+ \item Summarize the differences between $\lambda$-calculus and functional programming
+	languages based on it.
 \end{enumerate}
 
-\section{Inductive Definitions and Rule Induction}
+\section{Nameless $\lambda$-Calculus}
 
 \begin{enumerate}
- \item Give an inductive definition for the ternary relation $Rem$:
-  \[
-    (m, n)\ Rem\ r\ \text{if}\ r\ \text{is the remainder when}\ n\ \text{is divided by}\
-    m, \text{where}\ m \ne 0.
-  \]
-  You can assume the availability of other arithmetic operations or relations.
-
- \item Use the inductive definition for Rem, prove that
-  \[
-    (m, n)\ Rem\ r_1\ \text{and}\ (m, n)\ Rem\ r_2\ \text{implies}\ r1 = r2.
-  \]
+ \item Implement a function \verb|removeNames| that takes a naming context and a named
+  $\lambda$-term and returns the	corresponding nameless term.
+ \item Implement a function \verb|regainNames| that takes a naming context and a nameless
+  $\lambda$-term and returns a named term.
+ \item{} [\emph{optional}] Implement the \verb|shift| and \verb|subst| function.
+ \item{} [\emph{optional}] Implement the evaluation semantics for $\lambda_{bv}$ using
+  de-Bruijn indices.
 \end{enumerate}
 
-\section{Evaluation Semantics vs. Reduction Semantics}
+\noindent
+Note that your implementations for \verb|removeNames| and \verb|regainNames| should be
+inverse of each other.
+
+\section{Substitution vs. Environment}
 
 \begin{enumerate}
- \item Give the evaluation semantics for ABE.
+ \item Implement the substitution-based evaluation semantics for $\lambda_{ao}$ using
+  de-Bruijn indices.
+ \item Implement the environment-based evaluation semantics for $\lambda_{bn}$ using
+  de-Bruijn indices.
+\end{enumerate}
 
- \item Implement both the evaluation semantics and the multi-step reduction semantics for
-  ABE. Show that the two implementations give the same results for the same expressions by
-  a reasonable number of tests.
+\section{Computational $\lambda$-Calculus}
 
- \item{} [\emph{optional}] Prove that the evaluation semantics coincides with the multi-step
-  reduction semantics, that is,
-  \[ \forall e \in Exp, e \Longrightarrow v\ \text{if and only if}\ e \longrightarrow^{*}
-      v.
-  \]
+\begin{enumerate}
+ \item Implement the type-checking algorithm for the simply-typed $\lambda$-calculus
+  with booleans.
+ \item{} [\emph{optional}] Add support for monads to your type-checking algorithm.
 \end{enumerate}
 
 \end{document}
-
