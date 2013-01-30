@@ -58,30 +58,8 @@
 
 % New commands
 %
-\newcommand{\term}[1]{\textsf{#1}}
-\newcommand{\NatT}{\textbf{N}}
-\newcommand{\raro}{\rightarrow}
-\newcommand{\lamb}{\lambda}
-\newcommand{\zero}{\textbf{0}}
-\renewcommand{\succ}{\textbf{succ}}
-\newcommand{\pred}{\textbf{pred}}
-\newcommand{\isze}{\textbf{iszero}}
-\newcommand{\BlnT}{\textbf{B}}
-\newcommand{\true}{\textbf{true}}
-\newcommand{\fals}{\textbf{false}}
-\newcommand{\ifkw}{\textbf{if}}
-\newcommand{\thkw}{\textbf{then}}
-\newcommand{\elkw}{\textbf{else}}
-\newcommand{\UniT}{\textbf{U}}
-\newcommand{\unit}{\textbf{unit}}
-\newcommand{\askw}{\textbf{as}}
-\newcommand{\fstt}{\textbf{fst}}
-\newcommand{\sndt}{\textbf{snd}}
-\newcommand{\inlt}{\textbf{inl}}
-\newcommand{\inrt}{\textbf{inr}}
-\newcommand{\fixp}{\textbf{fix}}
-
 \include{prelude}
+\include{pltkwds}
 
 % Front elements
 %
@@ -106,9 +84,9 @@
 \begin{enumerate}
  \item Define the subtraction function $sub$ in the simply-typed $\lamb$-calculus extended with Peano numbers
   (\zero\ and \succ) and fixed point operator \fixp.\footnote{I apologize for giving the wrong type ($\NatT
-  \raro \NatT \raro \NatT$) to the parameter $fsub$ during the exercise session.}
+  \rarr \NatT \rarr \NatT$) to the parameter $fsub$ during the exercise session.}
   \begin{align*}
-   \fixp\ (& \lamb\ fsub : (\NatT \raro \NatT \raro \NatT) \raro (\NatT \raro \NatT \raro \NatT)\ . \\
+   \fixp\ (& \lamb\ fsub : (\NatT \rarr \NatT \rarr \NatT) \rarr (\NatT \rarr \NatT \rarr \NatT)\ . \\
            & \quad \lamb\ m : \NatT\ .\ \lamb\ n : \NatT \\
            & \quad \quad \ifkw\ (\isze\ m) \\
            & \quad \quad \quad \thkw\ \zero \\
