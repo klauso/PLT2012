@@ -58,12 +58,12 @@
 
 % New commands
 %
-\newcommand{\term}[1]{\textsf{#1}}
 \newcommand{\appl}[2]{#1\inparens{#2}}
 \newcommand{\eval}[2]{#1 \Longrightarrow #2}
 \newcommand{\redc}[2]{#1 \longrightarrow #2}
 
 \include{prelude}
+\include{pltkwds}
 
 % Front elements
 %
@@ -81,6 +81,30 @@
 
 
 \section{$\lambda$-Calculus vs. $\lambda$-Based Language}
+
+Many languages have claimed to be based on $\lambda$-calculus.  Being $\lambda$-calculus-based does
+\emph{not} mean they include $\lambda$-calculus as a subset or they offer every feature $\lambda$-calculus
+offers.  Actually there are quite some differences.
+\begin{enumerate}
+ \item $\lambda$-calculus uses \emph{static scoping}.  This sounds strange because nowadays almost all
+  languages (whether functional or imperative) that supports functions (whether higher-order or just
+  first-order), use static scoping.  However, this point deserves an emphasis because the first functional
+  language that claimed to be $\lambda$-calculus, mamely \emph{Lisp}, ironically uses \emph{dynamic scoping}.
+  This \emph{bug} or \emph{mis-feature} were not discovered for over two decades until Scheme came out.
+  Then after over one decade, static scoping was finnally written into the Common Lisp ANSI standard.  What
+  a historical lession!
+ \item $\lambda$-calculus supports \emph{symbolic computation} while most $\lambda$-calculus-based languages
+  do not.\footnote{Actually, most languages do not support symbolic computation.  Exceptions may be those
+  languages that were designed for AI, such as Lisp and Prolog.  Though their support is via a new data type
+  for symbols, which is kinda \emph{indirect}.}  Symbolic computation allows a free variable to compute to
+  itself if there is no binding associated to it.  So in $\lambda$-calculus, the variable $x$ evaluates to
+  itself.  Whereas in most functional languages, you get a run-time error complaining that the variable is
+  \emph{unbound}.
+ \item $\lambda$-calculus features full $\beta$-reduction.  In other words, evaluation goes under $lambda$.
+  Whereas in most functional language, evaluation stops in front of a $lambda$.  Instead of a
+  $lambda$-abstraction with a fully-reduced body, you get a closure.  Although we gain some efficiency, we
+  also miss part of the beauty of $\lambda$-calculus.  For example, we cannot see how Church-numerals work.
+\end{enumerate}
 
 \section{Nameless $\lambda$-Calculus}
 
