@@ -106,13 +106,13 @@ reason.  For very large terms, you can name their sub-terms and type them indivi
 \subsection{Programming with Extensions}
 
 \begin{enumerate}
- \item Complete the addition function $add$ in the simply-typed $\lamb$-calculus extended with Peano numbers
-  (\zero\ and \succ) and fixed point operator \fixp.\footnote{During the exercise session, I gave the wrong
-  type $(\NatT \rarr \NatT \rarr \NatT)$ to the variable that is to be bound to the fixed point.  Please
-  refer to the exercise sheet \texttt{ex12.pdf}.  In this homework exercise, I have given the type for
-  $fadd$, to remind of the mistake I made.}
+ \item Complete the addition function $add : \NatT \rarr \NatT \rarr \NatT$ in the simply-typed
+  $\lamb$-calculus with base type $\NatT$ and extension the fixed-point operator \fixp.\footnote{During
+  the exercise session, I gave the wrong type $(\NatT \rarr \NatT \rarr \NatT)$ to the variable that is
+  to be bound to the fixed point.  Please refer to the updated exercise sheet \texttt{ex12.pdf}.  In this
+  homework exercise, I have given the type for $fadd$, to remind you of the mistake I made.}
   \begin{align*}
-   \fixp\ (& \lamb\ fadd : (\NatT \rarr \NatT \rarr \NatT) \rarr (\NatT \rarr \NatT \rarr \NatT)\ .\ ?)
+   add = \fixp\ (& \lamb\ fadd : (\NatT \rarr \NatT \rarr \NatT) \rarr (\NatT \rarr \NatT \rarr \NatT)\ .\ ?)
   \end{align*}
 \end{enumerate}
 
