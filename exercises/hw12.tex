@@ -94,7 +94,7 @@ individually.
  \item $\case\ (\inlh\ \zero)\ \ofkw\ \inlh\ x \Rarr \fals\ |\ \inrh\ x \Rarr \true$
  \item
   \begin{align*}
-   \fixp\ (& \lamb\ fise : (\NatT \rarr \BlnT) \rarr (\NatT \rarr \BlnT)\ . \\
+   \fixp\ (& \lamb\ fise : \NatT \rarr \BlnT\ . \\
            & \quad \lamb\ n : \NatT\ . \\
            & \quad \quad \ifkw\ (\isze\ n) \\
            & \quad \quad \quad \thkw\ \true \\
@@ -108,12 +108,9 @@ individually.
 
 \begin{enumerate}
  \item Complete the addition function $add : \NatT \rarr \NatT \rarr \NatT$ in the simply-typed
-  $\lamb$-calculus with base type $\NatT$ and extension the fixed-point operator \fixp.\footnote{During
-  the exercise session, I gave the wrong type $(\NatT \rarr \NatT \rarr \NatT)$ to the variable that is
-  to be bound to the fixed point.  Please refer to the updated exercise sheet \texttt{ex12.pdf}.  In this
-  homework exercise, I have given the type for $fadd$, to remind you of the mistake I made.}
+  $\lamb$-calculus with base type $\NatT$ and extension the fixed-point operator \fixp.
   \begin{align*}
-   add = \fixp\ (& \lamb\ fadd : (\NatT \rarr \NatT \rarr \NatT) \rarr (\NatT \rarr \NatT \rarr \NatT)\ .\ ?)
+   add = \fixp\ (& \lamb\ fadd : \NatT \rarr \NatT \rarr \NatT\ .\ ?)
   \end{align*}
 \end{enumerate}
 
