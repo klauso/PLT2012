@@ -118,6 +118,26 @@ individually.
 
 \subsection{Parametric Polymorphism}
 
+\begin{enumerate}
+ \item Define a function called $twice$ that applies a function to an argument twice.
+ \item Use the function $twice$ to define a function called $thrice$ that applies a
+  function to an argument for four times.
+\end{enumerate}
+
 \subsection{Typing Church-Encodings}
+
+Refer to the Church-encodings for numerals, booleans and lists.\footnote{The encodings
+for booleans I showed in the exercise session is kinda over-generalized.  You should
+use the simpler one given in the slides.}  Note that, for all exercises, you should also
+give the type of the whole term.
+
+\begin{enumerate}
+ \item Define the multiplication function $cmul$ for Church-numerals.  Do it first using
+ the $cadd$ function already given in the slides.  Then try to give a definition directly.
+ (\emph{Hint}: For the latter, consider how many times the product of two Church-numerals
+ means to iterating a function.)
+ \item Define the boolean-or function $cor$ for Church-booleans.
+ \item Define the $crev$ that reverses a Church-encoded list.
+\end{enumerate}
 
 \end{document}
