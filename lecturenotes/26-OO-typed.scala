@@ -130,7 +130,6 @@ def checkclass(classes: Map[Symbol,Class], className: Symbol, cd: Class) = {
 }
 def checkprog(classes: Map[Symbol,Class])  = classes.foreach((s: (Symbol,Class)) => checkclass(classes,s._1, s._2))
    
-// def subtype(c1: Symbol, c2: Symbol, 
 val testclasses = Map(
   'Bool -> Class('Object, List.empty, Map(
      'ifThenElse -> MethodDecl( List(('thenExp, 'Object), ('elseExp, 'Object)), Id('thenExp), 'Object), // dummy default implementation
